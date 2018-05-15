@@ -4,7 +4,7 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-05-15T23:07:42+05:30</updated>
+ <updated>2018-05-15T23:53:48+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
@@ -19,21 +19,19 @@
    <id>http://localhost:4000/2018/05/06/intro</id>
    <content type="html">&lt;p&gt;Hi Everyone, I am glad to inform that I have been selected as a &lt;strong&gt;Student Developer in Google Summer of Code 2018&lt;/strong&gt; at CERN-HSF. I am really excited to contribute to the project. I will be working on the project &lt;strong&gt;“Additional Machine Learning Project Ideas and Areas of Interest”&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;The project aims to implement the Optimization Modules ( Momentum-based, Adam, RMSProp ) in Machine learning and expand the deep learning libraries to include Long Short Term Memory Recurrent Neural Network ( LSTM ).&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&quot;/GSOC18//images/gsoc18.jpg&quot; alt=&quot;GSoC'18&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;CERN-HSF&lt;/strong&gt; (High-Energy Physics Software Foundation) is the umbrella organization for high-energy physics-related projects in GSoC. The &lt;a href=&quot;http://hepsoftwarefoundation.org/&quot;&gt;HEP Software Foundation&lt;/a&gt; facilitates the coordination of common international efforts in high-energy physics software and computing.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;CERN&lt;/strong&gt; (European Organization for Nuclear Research, &lt;a href=&quot;http://www.cern.ch&quot;&gt;http://www.cern.ch&lt;/a&gt;) has participated in GSoC since 2011 as the CERN-SFT group, which provides common software for CERN’s experiments.&lt;/p&gt;
+&lt;p&gt;I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). &lt;strong&gt;ROOT&lt;/strong&gt; is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The &lt;strong&gt;Toolkit for Multivariate Data Analysis with ROOT (TMVA)&lt;/strong&gt; is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.&lt;/p&gt;
 
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/GSOC18//images/cern.jpg&quot; alt=&quot;GSoC'18 Selection&quot; /&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;My project aims to implement the &lt;strong&gt;optimization modules&lt;/strong&gt; including “Gradient Descent with Momentum, RMSProp and Adam”.&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;More Information about the project can be found &lt;a href=&quot;https://summerofcode.withgoogle.com/projects/#5779525665816576&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;I hope that this summer will be interesting,challenging and productive.&lt;/p&gt;
+&lt;p&gt;I hope that this summer will be interesting,challenging and productive. In my next post, I’ll give an overview of the optimization modules.&lt;/p&gt;
 </content>
  </entry>
  
