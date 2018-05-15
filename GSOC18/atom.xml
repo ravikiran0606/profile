@@ -4,7 +4,7 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-05-08T01:30:40+05:30</updated>
+ <updated>2018-05-15T23:07:42+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
@@ -29,7 +29,7 @@
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/images/cern.jpg&quot; alt=&quot;GSoC'18 Selection&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/GSOC18//images/cern.jpg&quot; alt=&quot;GSoC'18 Selection&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;More Information about the project can be found &lt;a href=&quot;https://summerofcode.withgoogle.com/projects/#5779525665816576&quot;&gt;Here&lt;/a&gt;&lt;/p&gt;
 
