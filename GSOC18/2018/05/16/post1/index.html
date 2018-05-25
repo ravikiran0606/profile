@@ -11,7 +11,7 @@
 
   <title>
     
-      GSoC'18 @ CERN &middot; Professional Blog
+      Optimization Modules - A Brief Overview &middot; GSoC'18 @ CERN
     
   </title>
 
@@ -79,41 +79,10 @@
 
 
     <div class="content container">
-      <div class="posts">
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/05/22/post2/">
-        Optimization Modules - Class Structure
-      </a>
-    </h1>
-
-    <span class="post-date">22 May 2018</span>
-
-    <p>In this blog post, I will be describing the class structure that can be potentially used to include the optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.</p>
-
-<p><strong>Initial Design:</strong>
-<br />
-<img src="/GSOC18//images/tmva_optimizers.jpg" alt="TMVAOptimizers" />
-<br /></p>
-
-<p>I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the <a href="https://www.tensorflow.org/api_guides/python/train">tensorflow optimizers</a>.</p>
-
-<p>This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.</p>
-
-
-  </div>
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/05/16/post1/">
-        Optimization Modules - A Brief Overview
-      </a>
-    </h1>
-
-    <span class="post-date">16 May 2018</span>
-
-    <p>In this blog post, I would like to give a brief overview of the existing gradient descent optimization algorithms that are available. There are lots of good resources available online. You can check them at the References section at the end of this post.</p>
+      <div class="post">
+  <h1 class="post-title">Optimization Modules - A Brief Overview</h1>
+  <span class="post-date">16 May 2018</span>
+  <p>In this blog post, I would like to give a brief overview of the existing gradient descent optimization algorithms that are available. There are lots of good resources available online. You can check them at the References section at the end of this post.</p>
 
 <p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.</p>
 
@@ -200,45 +169,33 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 
 <p>8) <a href="https://keras.io/optimizers/">Keras Optimizers</a></p>
 
-  </div>
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/05/06/intro/">
-        GSoC'18 @ CERN-HSF
-      </a>
-    </h1>
-
-    <span class="post-date">06 May 2018</span>
-
-    <p>Hi Everyone, I am glad to inform that I have been selected as a <strong>Student Developer in Google Summer of Code 2018</strong> at CERN-HSF. I am really excited to contribute to the project. I will be working on the project <strong>“Additional Machine Learning Project Ideas and Areas of Interest”</strong>.</p>
-
-<p><img src="/GSOC18//images/gsoc18.jpg" alt="GSoC'18" /></p>
-
-<p><strong>CERN-HSF</strong> (High-Energy Physics Software Foundation) is the umbrella organization for high-energy physics-related projects in GSoC. The <a href="http://hepsoftwarefoundation.org/">HEP Software Foundation</a> facilitates the coordination of common international efforts in high-energy physics software and computing.</p>
-
-<p>I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). <strong>ROOT</strong> is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The <strong>Toolkit for Multivariate Data Analysis with ROOT (TMVA)</strong> is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.</p>
-
-<blockquote>
-  <p>My project aims to implement the <strong>optimization modules</strong> including “Gradient Descent with Momentum, RMSProp and Adam”.</p>
-</blockquote>
-
-<p>More Information about the project can be found <a href="https://summerofcode.withgoogle.com/projects/#5779525665816576">Here</a></p>
-
-<p>I hope that this summer will be interesting,challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
-
-  </div>
-  
 </div>
 
-<div class="pagination">
-  
-    <span class="pagination-item older">Older</span>
-  
-  
-    <span class="pagination-item newer">Newer</span>
-  
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/22/post2/">
+            Optimization Modules - Class Structure
+            <small>22 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/06/intro/">
+            GSoC'18 @ CERN-HSF
+            <small>06 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
 </div>
+
     </div>
 
   </body>

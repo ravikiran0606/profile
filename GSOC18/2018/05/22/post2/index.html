@@ -11,7 +11,7 @@
 
   <title>
     
-      404: Page not found &middot; GSoC'18 @ CERN
+      Optimization Modules - Class Structure &middot; GSoC'18 @ CERN
     
   </title>
 
@@ -79,9 +79,46 @@
 
 
     <div class="content container">
-      <div class="page">
-  <h1 class="page-title">404: Page not found</h1>
-  <p class="lead">Sorry, we've misplaced that URL or it's pointing to something that doesn't exist. <a href="/GSOC18/">Head back home</a> to try finding it again.</p>
+      <div class="post">
+  <h1 class="post-title">Optimization Modules - Class Structure</h1>
+  <span class="post-date">22 May 2018</span>
+  <p>In this blog post, I will be describing the class structure that can be potentially used to include the optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.</p>
+
+<p><strong>Initial Design:</strong>
+<br />
+<img src="/GSOC18//images/tmva_optimizers.jpg" alt="TMVAOptimizers" />
+<br /></p>
+
+<p>I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the <a href="https://www.tensorflow.org/api_guides/python/train">tensorflow optimizers</a>.</p>
+
+<p>This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.</p>
+
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/16/post1/">
+            Optimization Modules - A Brief Overview
+            <small>16 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/06/intro/">
+            GSoC'18 @ CERN-HSF
+            <small>06 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
 </div>
 
     </div>

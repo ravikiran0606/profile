@@ -4,13 +4,126 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-05-15T23:53:48+05:30</updated>
+ <updated>2018-05-25T19:01:00+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
    <email></email>
  </author>
 
+ 
+ <entry>
+   <title>Optimization Modules - Class Structure</title>
+   <link href="http://localhost:4000/2018/05/22/post2/"/>
+   <updated>2018-05-22T00:00:00+05:30</updated>
+   <id>http://localhost:4000/2018/05/22/post2</id>
+   <content type="html">&lt;p&gt;In this blog post, I will be describing the class structure that can be potentially used to include the optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Initial Design:&lt;/strong&gt;
+&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/tmva_optimizers.jpg&quot; alt=&quot;TMVAOptimizers&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the &lt;a href=&quot;https://www.tensorflow.org/api_guides/python/train&quot;&gt;tensorflow optimizers&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.&lt;/p&gt;
+
+</content>
+ </entry>
+ 
+ <entry>
+   <title>Optimization Modules - A Brief Overview</title>
+   <link href="http://localhost:4000/2018/05/16/post1/"/>
+   <updated>2018-05-16T00:00:00+05:30</updated>
+   <id>http://localhost:4000/2018/05/16/post1</id>
+   <content type="html">&lt;p&gt;In this blog post, I would like to give a brief overview of the existing gradient descent optimization algorithms that are available. There are lots of good resources available online. You can check them at the References section at the end of this post.&lt;/p&gt;
+
+&lt;p&gt;The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Gradient descent&lt;/strong&gt; is a &lt;strong&gt;first-order iterative optimization algorithm&lt;/strong&gt; for finding the minimum of a function. To find a local minimum of a function using gradient descent, one takes steps proportional to the negative of the gradient (or approximate gradient) of the function at the current point.
+Gradient descent goes “downhill” on a cost function &lt;code class=&quot;highlighter-rouge&quot;&gt;J&lt;/code&gt;. Think of it as trying to do this:&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/gradientdescent.jpg&quot; alt=&quot;Gradient Descent&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;gradient-descent-variants&quot;&gt;Gradient Descent Variants:&lt;/h2&gt;
+
+&lt;p&gt;There are three variants of gradient descent, which depends on how much data you use to cacluate the gradients and perform an update. They are as follows,&lt;/p&gt;
+
+&lt;h3 id=&quot;1-batch-gradient-descent&quot;&gt;1) Batch Gradient Descent:&lt;/h3&gt;
+&lt;p&gt;Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters θ for the entire training dataset. It supports maximum parallelism which is achieved by vectorization, but if the data is large, it cannot fit into the memory.&lt;/p&gt;
+
+&lt;p&gt;θ = θ − η ⋅ ∇&lt;sub&gt;θ&lt;/sub&gt;J(θ).&lt;/p&gt;
+
+&lt;h3 id=&quot;2-stochastic-gradient-descent&quot;&gt;2) Stochastic Gradient Descent:&lt;/h3&gt;
+&lt;p&gt;Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit the parallelism by vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.&lt;/p&gt;
+
+&lt;p&gt;θ = θ − η ⋅ ∇&lt;sub&gt;θ&lt;/sub&gt;J(θ;x&lt;sup&gt;(i)&lt;/sup&gt;;y&lt;sup&gt;(i)&lt;/sup&gt;).&lt;/p&gt;
+
+&lt;h3 id=&quot;3-mini-batch-gradient-descent&quot;&gt;3) Mini-Batch Gradient Descent:&lt;/h3&gt;
+
+&lt;p&gt;Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits parallelism to some extent and its update is also fast.&lt;/p&gt;
+
+&lt;p&gt;θ = θ − η ⋅ ∇&lt;sub&gt;θ&lt;/sub&gt;J(θ;x&lt;sup&gt;(i:i+n)&lt;/sup&gt;;y&lt;sup&gt;(i:i+n)&lt;/sup&gt;).&lt;/p&gt;
+
+&lt;h2 id=&quot;gradient-descent-optimization-algorithms&quot;&gt;Gradient descent optimization algorithms:&lt;/h2&gt;
+
+&lt;p&gt;Here, I’ll discuss about the various gradient descent optimization algorithms that are proven to work best in most of the applications.&lt;/p&gt;
+
+&lt;h3 id=&quot;1-momentum-based-update&quot;&gt;1) Momentum based update:&lt;/h3&gt;
+
+&lt;p&gt;Momentum is a method that helps accelerate SGD in the relevant direction and dampens oscillations as can be seen in the below image. It does this by adding a fraction γ of the update vector of the past time step to the current update vector.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;SGD without Momentum:&lt;/strong&gt; &lt;img src=&quot;/GSOC18//images/without_momentum.gif&quot; alt=&quot;SGD without momentum&quot; /&gt;
+&lt;strong&gt;SGD with Momentum:&lt;/strong&gt; &lt;img src=&quot;/GSOC18//images/with_momentum.gif&quot; alt=&quot;SGD with momentum&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The update is done as follows,&lt;/p&gt;
+
+&lt;p&gt;v&lt;sub&gt;t&lt;/sub&gt; = γ v&lt;sub&gt;t−1&lt;/sub&gt; + η ∇&lt;sub&gt;θ&lt;/sub&gt;J(θ)
+&lt;br /&gt;
+θ = θ − v&lt;sub&gt;t&lt;/sub&gt;&lt;/p&gt;
+
+&lt;p&gt;The usual value of γ is 0.9. ie ( γ &amp;lt; 1 )&lt;/p&gt;
+
+&lt;h3 id=&quot;2-nesterov-accelerated-momentum&quot;&gt;2) Nesterov accelerated Momentum:&lt;/h3&gt;
+
+&lt;p&gt;Ilya Sutskever suggested a new form of momentum that often works better. It is inspired by the nesterov method for optimizing convex functions. First, make a big jump in the direction of the previous accumulated gradient. Then, measure the gradient where you end up and make correction. Its better to correct a mistake after you have made it. :P&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Nesterov Update:&lt;/strong&gt;
+&lt;img src=&quot;/GSOC18//images/nesterov_update.png&quot; alt=&quot;Nesterov Update&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Here, &lt;span style=&quot;color:brown&quot;&gt;brown vector = jump&lt;/span&gt;, &lt;span style=&quot;color:red&quot;&gt;red vector = correction&lt;/span&gt;, &lt;span style=&quot;color:green&quot;&gt;green vector =  accumulated gradient&lt;/span&gt;, &lt;span style=&quot;color:blue&quot;&gt;blue vector = standard momentum&lt;/span&gt;.&lt;/p&gt;
+
+&lt;p&gt;The update is done as follows,&lt;/p&gt;
+
+&lt;p&gt;v&lt;sub&gt;t&lt;/sub&gt; = γ v&lt;sub&gt;t-1&lt;/sub&gt; + η∇&lt;sub&gt;θ&lt;/sub&gt;J(θ − γv&lt;sub&gt;t−1&lt;/sub&gt;)
+&lt;br /&gt;
+θ = θ − v&lt;sub&gt;t&lt;/sub&gt;&lt;/p&gt;
+
+&lt;p&gt;The usual value of γ is 0.9. ie ( γ &amp;lt; 1 ) and it depends on the application.&lt;/p&gt;
+
+&lt;p&gt;I’ll cover the remaining algorithms by updating this post soon. So Stay tuned!! :P&lt;/p&gt;
+
+&lt;h3 id=&quot;references&quot;&gt;References:&lt;/h3&gt;
+
+&lt;p&gt;1) &lt;a href=&quot;http://ruder.io/optimizing-gradient-descent/index.html&quot;&gt;An overview of gradient descent optimization algorithms&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;2) &lt;a href=&quot;https://towardsdatascience.com/difference-between-batch-gradient-descent-and-stochastic-gradient-descent-1187f1291aa1&quot;&gt;Difference between Batch Gradient Descent and Stochastic Gradient Descent&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;3) &lt;a href=&quot;http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf&quot;&gt;RMSProp&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;4) &lt;a href=&quot;http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf&quot;&gt;Adaptive Subgradient Methods for Online Learning and Stochastic Optimization&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;5) &lt;a href=&quot;https://arxiv.org/abs/1212.5701&quot;&gt;AdaDelta: An Adaptive Learning Rate Method&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;6) &lt;a href=&quot;https://arxiv.org/abs/1412.6980v8&quot;&gt;Adam: A Method for Stochastic Optimization&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;7) &lt;a href=&quot;http://cs229.stanford.edu/proj2015/054_report.pdf&quot;&gt;Nadam: Nesterov Adam optimizer&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;8) &lt;a href=&quot;https://keras.io/optimizers/&quot;&gt;Keras Optimizers&lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
  
  <entry>
    <title>GSoC'18 @ CERN-HSF</title>
