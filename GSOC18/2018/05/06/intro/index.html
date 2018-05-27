@@ -16,8 +16,8 @@
   </title>
 
   <!--Mathjax-->
-  <script type="text/javascript"
-   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 
   <!-- CSS -->
@@ -91,12 +91,13 @@
 <p>I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). <strong>ROOT</strong> is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The <strong>Toolkit for Multivariate Data Analysis with ROOT (TMVA)</strong> is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.</p>
 
 <blockquote>
-  <p>My project aims to implement the <strong>optimization modules</strong> including “Gradient Descent with Momentum, RMSProp and Adam”.</p>
+  <p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.<br /><br />
+The project aims to implement various <strong>Optimization Modules ( Momentum-based, Nesterov accelerated momentum, Adagrad, RMSProp, Adadelta, Adamax, Adam, Nadam, AMSGrad etc )</strong> in Machine learning.</p>
 </blockquote>
 
 <p>More Information about the project can be found <a href="https://summerofcode.withgoogle.com/projects/#5779525665816576">Here</a></p>
 
-<p>I hope that this summer will be interesting,challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
+<p>I hope that this summer will be interesting, challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
 
 </div>
 

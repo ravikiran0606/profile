@@ -16,8 +16,8 @@
   </title>
 
   <!--Mathjax-->
-  <script type="text/javascript"
-   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
   </script>
 
   <!-- CSS -->
@@ -101,7 +101,6 @@
 
 <p>This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.</p>
 
-
   </div>
   
   <div class="post">
@@ -129,20 +128,20 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 <p>There are three variants of gradient descent, which depends on how much data you use to cacluate the gradients and perform an update. They are as follows,</p>
 
 <h3 id="1-batch-gradient-descent">1) Batch Gradient Descent:</h3>
-<p>Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters θ for the entire training dataset. It supports maximum parallelism which is achieved by vectorization, but if the data is large, it cannot fit into the memory.</p>
+<p>Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters <script type="math/tex">\theta</script> for the entire training dataset. It supports maximum parallelism which is achieved by vectorization, but if the data is large, it cannot fit into the memory.</p>
 
-<p>θ = θ − η ⋅ ∇<sub>θ</sub>J(θ).</p>
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta)</script>
 
 <h3 id="2-stochastic-gradient-descent">2) Stochastic Gradient Descent:</h3>
 <p>Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit the parallelism by vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.</p>
 
-<p>θ = θ − η ⋅ ∇<sub>θ</sub>J(θ;x<sup>(i)</sup>;y<sup>(i)</sup>).</p>
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i)}; y^{(i)})</script>
 
 <h3 id="3-mini-batch-gradient-descent">3) Mini-Batch Gradient Descent:</h3>
 
-<p>Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits parallelism to some extent and its update is also fast.</p>
+<p>Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits parallelism to some extent and its update is also fast. It is the most preferred way of update among these variants.</p>
 
-<p>θ = θ − η ⋅ ∇<sub>θ</sub>J(θ;x<sup>(i:i+n)</sup>;y<sup>(i:i+n)</sup>).</p>
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i:i+n)}; y^{(i:i+n)})</script>
 
 <h2 id="gradient-descent-optimization-algorithms">Gradient descent optimization algorithms:</h2>
 
@@ -150,18 +149,22 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 
 <h3 id="1-momentum-based-update">1) Momentum based update:</h3>
 
-<p>Momentum is a method that helps accelerate SGD in the relevant direction and dampens oscillations as can be seen in the below image. It does this by adding a fraction γ of the update vector of the past time step to the current update vector.</p>
+<p>Momentum is a method that helps accelerate SGD in the relevant direction and dampens oscillations as can be seen in the below image. It does this by adding a fraction <script type="math/tex">\gamma</script> of the update vector of the past time step to the current update vector.</p>
 
 <p><strong>SGD without Momentum:</strong> <img src="/GSOC18//images/without_momentum.gif" alt="SGD without momentum" />
 <strong>SGD with Momentum:</strong> <img src="/GSOC18//images/with_momentum.gif" alt="SGD with momentum" /></p>
 
-<p>The update is done as follows,</p>
+<p>The momentum update is done as follows,</p>
 
-<p>v<sub>t</sub> = γ v<sub>t−1</sub> + η ∇<sub>θ</sub>J(θ)
-<br />
-θ = θ − v<sub>t</sub></p>
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta) \\  
+\theta &= \theta - v_t
+\end{split}
+\end{align} %]]></script>
 
-<p>The usual value of γ is 0.9. ie ( γ &lt; 1 )</p>
+<p>The usual value of <script type="math/tex">\gamma</script> is 0.9. ie ( <script type="math/tex">\gamma</script> &lt; 1 )</p>
 
 <h3 id="2-nesterov-accelerated-momentum">2) Nesterov accelerated Momentum:</h3>
 
@@ -172,19 +175,185 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 
 <p>Here, <span style="color:brown">brown vector = jump</span>, <span style="color:red">red vector = correction</span>, <span style="color:green">green vector =  accumulated gradient</span>, <span style="color:blue">blue vector = standard momentum</span>.</p>
 
-<p>The update is done as follows,</p>
+<p>The Nesterov update is done as follows,</p>
 
-<p>v<sub>t</sub> = γ v<sub>t-1</sub> + η∇<sub>θ</sub>J(θ − γv<sub>t−1</sub>)
-<br />
-θ = θ − v<sub>t</sub></p>
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta - \gamma v_{t-1} ) \\  
+\theta &= \theta - v_t
+\end{split}
+\end{align} %]]></script>
 
-<p>The usual value of γ is 0.9. ie ( γ &lt; 1 ) and it depends on the application.</p>
+<p>The usual value of <script type="math/tex">\gamma</script> is 0.9. ie ( <script type="math/tex">\gamma</script> &lt; 1 ) and it depends on the application.</p>
 
-<p>I’ll cover the remaining algorithms by updating this post soon. So Stay tuned!! :P</p>
+<h3 id="3-adagrad">3) Adagrad:</h3>
+
+<p>AdaGrad is an optimization method that allows different step sizes for different features. It increases the influence of rare but informative features i.e. It adapts the learning rate to the parameters, performing larger updates for infrequent and smaller updates for frequent parameters. For this reason, it is well-suited for dealing with sparse data.</p>
+
+<p>The Adagrad update is done as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{G_{t} + \epsilon}} \odot g_{t}</script>
+
+<p>where,<br />
+    <script type="math/tex">G_{t}</script> - Sum of the squares of the past gradients w.r.t all parameters <script type="math/tex">\theta</script> along its diagonal.<br />
+    <script type="math/tex">\odot</script> - Matrix-vector dot product.<br />
+    <script type="math/tex">g_{t}</script> - Gradient at time step <script type="math/tex">t</script>.<br />
+    <script type="math/tex">\eta</script> - Learning rate.<br />
+    <script type="math/tex">\epsilon</script> - Smoothing term that avoids division by zero and is usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="4-adadelta">4) Adadelta:</h3>
+
+<p>Adadelta is an extension of Adagrad that tries to reduce the monotonically decreasing learning rate. Instead of accumulating all past squared gradients, Adadelta stores only the window of accumulated past gradients to some fixed window size <script type="math/tex">w</script>.</p>
+
+<p>And Instead of storing all the past gradients of window size w, it stores the decaying average of the past squared gradients. The running average <script type="math/tex">E[g^2]_t</script> at time step <script type="math/tex">t</script> is calculated as,</p>
+
+<script type="math/tex; mode=display">E[g^2]_t = \gamma E[g^2]_{t-1} + (1 - \gamma) g^2_t</script>
+
+<p>The root mean squared (RMS) error of the gradient is therefore,</p>
+
+<script type="math/tex; mode=display">RMS[g]_{t} = \sqrt{E[g^2]_t + \epsilon}</script>
+
+<p>And also the decaying average of the past squared updates is computed as,</p>
+
+<script type="math/tex; mode=display">E[\Delta \theta^2]_t = \gamma E[\Delta \theta^2]_{t-1} + (1 - \gamma) \Delta \theta^2_t</script>
+
+<p>The root mean squared (RMS) error of the updates is therefore,</p>
+
+<script type="math/tex; mode=display">RMS[\Delta \theta]_{t} = \sqrt{E[\Delta \theta^2]_t + \epsilon}</script>
+
+<p>Since <script type="math/tex">RMS[\Delta \theta]_{t}</script> is unknown, we approximate it with the RMS of parameter updates until the previous time step i.e. <script type="math/tex">RMS[\Delta \theta]_{t-1}</script></p>
+
+<p>Thus, the Adadelta update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+\Delta \theta_t &= - \dfrac{RMS[\Delta \theta]_{t-1}}{RMS[g]_{t}} g_{t} \\
+\theta_{t+1} &= \theta_t + \Delta \theta_t 
+\end{split}
+\end{align} %]]></script>
+
+<p>Here, the parameters usually take the default value,<br />
+<script type="math/tex">\gamma</script> - Usually around 0.9.<br />
+<script type="math/tex">\epsilon</script> - Smoothing term that avoids division by zero and is usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="5-rmsprop">5) RMSprop:</h3>
+
+<p>RMSprop is an unpublished, adaptive learning rate method proposed by Geoff Hinton. The main idea is <strong>“Divide the gradient by a running average of its recent magnitude”</strong>. It is similar to Adadelta but it is developed independently to overcome the disadvantages of the Adagrad algorithm.</p>
+
+<p>The RMSprop update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+E[g^2]_t &= \gamma E[g^2]_{t-1} + (1-\gamma) g^2_t \\  
+\theta_{t+1} &= \theta_{t} - \dfrac{\eta}{\sqrt{E[g^2]_t + \epsilon}} g_{t}
+\end{split}
+\end{align} %]]></script>
+
+<p>where,<br />
+<script type="math/tex">\gamma</script> - Usually around 0.9.<br />
+<script type="math/tex">\eta</script> - Learning rate, usually around 0.001.<br />
+<script type="math/tex">E[g^2]_t</script> - Decaying average of the past squared gradients at time step <script type="math/tex">t</script>.<br /></p>
+
+<h3 id="6-adam">6) Adam:</h3>
+
+<p>Adaptive Moment Estimation (Adam) is another method that computes adaptive learning rates for each parameter. It stores both the decaying average of the past gradients <script type="math/tex">m_t</script>, similar to momentum and also the decaying average of the past squared gradients <script type="math/tex">v_t</script>, similar to RMSprop and Adadelta. Thus, it combines the advantages of both the methods. Adam is the default choice of the optimizer for any application in general.</p>
+
+<p>The decaying average of the past gradients <script type="math/tex">m_t</script> and the past squared gradients <script type="math/tex">v_t</script> is computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t \\  
+v_t &= \beta_2 v_{t-1} + (1 - \beta_2) g_t^2  
+\end{split}
+\end{align} %]]></script>
+
+<p>And since these <script type="math/tex">m_t</script> and <script type="math/tex">v_t</script> are initialized with zeros, they are biased towards zero, especially during the initial time steps. Thus, to avoid these biases, the bias corrected versions of them are computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+\hat{m}_t &= \dfrac{m_t}{1 - \beta^t_1} \\
+\hat{v}_t &= \dfrac{v_t}{1 - \beta^t_2} \end{split}
+\end{align} %]]></script>
+
+<p>Thus, the Adam update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t</script>
+
+<p>where,<br />
+<script type="math/tex">\beta_1</script> - usually 0.9.<br />
+<script type="math/tex">\beta_2</script> - usually 0.999.<br />
+<script type="math/tex">\eta</script> - Learning rate.<br />
+<script type="math/tex">\epsilon</script> - usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="7-adamax">7) Adamax:</h3>
+
+<p>Adamax is the generalization of the Adam algorithm to the <script type="math/tex">\ell_{\infty}</script> norm. Kingma and Ba show that <script type="math/tex">v_t</script> with <script type="math/tex">\ell_{\infty}</script> converges to the more stable value.</p>
+
+<p>The infinity norm-constrained <script type="math/tex">v_t</script> is denoted as <script type="math/tex">u_t</script> and is computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+u_t &= \beta_2^\infty v_{t-1} + (1 - \beta_2^\infty) |g_t|^\infty\\  
+              & = \max(\beta_2 \cdot v_{t-1}, |g_t|)
+\end{split}
+\end{align} %]]></script>
+
+<p>Here, since <script type="math/tex">u_t</script> relies on the max operation, it is not biased towards zero unlike the ones in the Adam algorithm.</p>
+
+<p>Thus, the Adamax update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{u_t} \hat{m}_t</script>
+
+<p>where,<br />
+<script type="math/tex">\beta_1</script> - usually 0.9.<br />
+<script type="math/tex">\beta_2</script> - usually 0.999.<br />
+<script type="math/tex">\eta</script> - Learning rate, usually 0.002.<br /></p>
+
+<h3 id="8-nadam">8) Nadam:</h3>
+
+<p>Nadam is similar to Adam which is a combination of the momentum and the RMSprop. Nadam can be viewed as a combination of the nesterov accelerated momentum and the RMSprop. Here, we do not need to modify the <script type="math/tex">\hat{v}_t</script>. The momentum vector equations are as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align} 
+\begin{split}
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t\\  
+\hat{m}_t & = \frac{m_t}{1 - \beta^t_1}\\
+\theta_{t+1} &= \theta_{t} - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t
+\end{split}
+\end{align} %]]></script>
+
+<p>Expanding the last equation gives,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\dfrac{\beta_1 m_{t-1}}{1 - \beta^t_1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<p>But since,</p>
+
+<script type="math/tex; mode=display">\hat{m}_{t-1} =  \dfrac{m_{t-1}}{1 - \beta^t_1}</script>
+
+<p>we get,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_{t-1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<p>We can now add Nesterov momentum just as we did previously by simply replacing this bias-corrected estimate of the momentum vector of the previous time step <script type="math/tex">\hat{m}_{t−1}</script> with the bias-corrected estimate of the current momentum vector <script type="math/tex">\hat{m}_t</script>.</p>
+
+<p>Thus, the Nadam update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_t + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<h3 id="summary-of-the-various-update-equations-">Summary of the various update equations :</h3>
+<p><br /></p>
+
+<p><img src="/GSOC18//images/update_eqn.jpg" alt="Update Equations" /></p>
 
 <h3 id="references">References:</h3>
 
-<p>1) <a href="http://ruder.io/optimizing-gradient-descent/index.html">An overview of gradient descent optimization algorithms</a></p>
+<p>1) <a href="http://ruder.io/optimizing-gradient-descent/index.html">An overview of gradient descent optimization algorithms - Sebastian Ruder</a></p>
 
 <p>2) <a href="https://towardsdatascience.com/difference-between-batch-gradient-descent-and-stochastic-gradient-descent-1187f1291aa1">Difference between Batch Gradient Descent and Stochastic Gradient Descent</a></p>
 
@@ -198,7 +367,9 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 
 <p>7) <a href="http://cs229.stanford.edu/proj2015/054_report.pdf">Nadam: Nesterov Adam optimizer</a></p>
 
-<p>8) <a href="https://keras.io/optimizers/">Keras Optimizers</a></p>
+<p>8) <a href="http://cs229.stanford.edu/proj2015/054_report.pdf">Incorporating Nesterov Momentum into Adam</a></p>
+
+<p>9) <a href="https://keras.io/optimizers/">Keras Optimizers</a></p>
 
   </div>
   
@@ -220,12 +391,13 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 <p>I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). <strong>ROOT</strong> is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The <strong>Toolkit for Multivariate Data Analysis with ROOT (TMVA)</strong> is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.</p>
 
 <blockquote>
-  <p>My project aims to implement the <strong>optimization modules</strong> including “Gradient Descent with Momentum, RMSProp and Adam”.</p>
+  <p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.<br /><br />
+The project aims to implement various <strong>Optimization Modules ( Momentum-based, Nesterov accelerated momentum, Adagrad, RMSProp, Adadelta, Adamax, Adam, Nadam, AMSGrad etc )</strong> in Machine learning.</p>
 </blockquote>
 
 <p>More Information about the project can be found <a href="https://summerofcode.withgoogle.com/projects/#5779525665816576">Here</a></p>
 
-<p>I hope that this summer will be interesting,challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
+<p>I hope that this summer will be interesting, challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
 
   </div>
   
