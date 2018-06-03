@@ -4,7 +4,7 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-05-27T22:57:31+05:30</updated>
+ <updated>2018-06-03T14:30:32+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
@@ -17,7 +17,7 @@
    <link href="http://localhost:4000/2018/05/22/post2/"/>
    <updated>2018-05-22T00:00:00+05:30</updated>
    <id>http://localhost:4000/2018/05/22/post2</id>
-   <content type="html">&lt;p&gt;In this blog post, I will be describing the class structure that can be potentially used to include the optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.&lt;/p&gt;
+   <content type="html">&lt;p&gt;In this blog post, I will be describing the class structure that can be potentially used to include the Optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the Optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Initial Design:&lt;/strong&gt;
 &lt;br /&gt;
@@ -26,7 +26,90 @@
 
 &lt;p&gt;I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the &lt;a href=&quot;https://www.tensorflow.org/api_guides/python/train&quot;&gt;tensorflow optimizers&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.&lt;/p&gt;
+&lt;p&gt;This is my first approximate design of the Optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Update: 1 June 2018&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Atlast, after discussing with the mentors, I finally found the correct design solution for including the Optimizers in the existing framework and the design seems to be feasible.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;current-workflow-of-one-step-of-optimizers-update&quot;&gt;Current workflow of one step of Optimizer’s update:&lt;/h2&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/current_workflow1.jpg&quot; alt=&quot;CurrentWorkflow&quot; /&gt;
+&lt;img src=&quot;/GSOC18//images/current_workflow2.jpg&quot; alt=&quot;CurrentWorkflow&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;In the current workflow, the class MethodDL creates an instance of the class TDLGradientDescent as minimizer and it is initialized. For performing one step of the update, the minimizer’s Step() function is called. The minimizer’s Step() function in turn calls the class TDeepNet’s Forward(), Backward() and Update() functions. The class TDeepNet’s Update() function iterates through its layers and calls the class VGeneralLayer’s Update() function for each layer. And the &lt;strong&gt;class VGeneralLayer’s Update() function&lt;/strong&gt; is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its &lt;strong&gt;UpdateWeights()&lt;/strong&gt; and &lt;strong&gt;UpdateBiases()&lt;/strong&gt; functions.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;design-issues-and-its-solutions&quot;&gt;Design Issues and its solutions:&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1) How to identify the type of update in the class VGeneralLayer like SGD or Adam etc ?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The current implementation by default performs only the schocastic gradient descent update. And there is no way of identifying the type of update depending on the type of Optimizer. So the solution would be to &lt;strong&gt;pass the reference to the Optimizer object&lt;/strong&gt; from the class MethodDL down to the class VGeneralLayer.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2) Where to store the additional variables like sum of past gradients and other parameters specific to each Optimizer ?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Since these additional variables are needed for performing the updates, they need to be stored in the same class which actually performs the update. The current implementation actually performs the update in the class VGeneralLayer. So as per the current implementation, if we store all the additional variables in the class VGeneralLayer, that would look clumsy and strange since that is not the responsibility of the class VGeneralLayer. So I have decided to &lt;strong&gt;perform the actual update in the Optimizer class and store additional variables in it&lt;/strong&gt;. This would look a bit cleaner.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3) Should we need to move the update function from the class GeneralLayer to Optimizer class ?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Yes&lt;/strong&gt;, we should move the update function to the Optimizer class since its the responsibility of the Optimizer to perform such an update.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4) Do we really need to test the convergence in the Optimizer class itself or move it to the train() method of class MethodDL ?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The current implementation actually has the test for convergence in the Optimizer class itself. But testing for convergence is not the responsibility of the Optimizer class but is the responsibility of the training procedure. So the better option is to &lt;strong&gt;move the test for convergence to the train() method of class MethodDL.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;modified-workflow-of-one-step-of-optimizers-update&quot;&gt;Modified workflow of one step of Optimizer’s update:&lt;/h2&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/modified_workflow1.jpg&quot; alt=&quot;ModifiedWorkflow&quot; /&gt;
+&lt;img src=&quot;/GSOC18//images/modified_workflow2.jpg&quot; alt=&quot;ModifiedWorkflow&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;In the modified workflow, the class MethodDL creates an instance of the class TSGD ( i.e. specific type of optimizer as mentioned in the option ) as minimizer and it is initialized. Now for performing one step of the update, we actually pass the reference to the minimizer object to the class DeepNet’s Update() function. The class DeepNet’s Update() function iterates through each of its layer objects and pass the same reference of the minimizer object to the class VGeneralLayer’s Update() function. And the class VGeneralLayer’s Update() function now performs the update with the use of minimizer’s Step() function. So depending on the type of minimizer object used to perform the update, the corresponding update is performed. Here, the &lt;strong&gt;class TSGD’s Step() function&lt;/strong&gt; is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its &lt;strong&gt;UpdateWeights()&lt;/strong&gt; and &lt;strong&gt;UpdateBiases()&lt;/strong&gt; functions.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;api-changes&quot;&gt;API Changes:&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;in-class-methoddl-&quot;&gt;In class MethodDL :&lt;/h3&gt;
+
+&lt;p&gt;1) Modify the &lt;strong&gt;Struct TTrainingSettings&lt;/strong&gt; to include the option for optimizer.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/api_change1.jpg&quot; alt=&quot;APIChange1&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;2) Create an instance of the &lt;strong&gt;particular type of optimizer&lt;/strong&gt; in the Train() method based on the option specified. If no option is specified, default choice would be to use Adam optimizer.&lt;/p&gt;
+
+&lt;h3 id=&quot;in-file-functionsh-&quot;&gt;In file Functions.h :&lt;/h3&gt;
+
+&lt;p&gt;1) Create a enum class EOptimizer with various optimizers.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/api_change2.jpg&quot; alt=&quot;APIChange2&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;other-files&quot;&gt;Other files:&lt;/h3&gt;
+
+&lt;p&gt;1) Create a &lt;strong&gt;base class TOptimizer&lt;/strong&gt; with the basic functions. ( Refer to the class diagram below. )&lt;/p&gt;
+
+&lt;p&gt;2) Create various classes like &lt;strong&gt;Class TSGD, Class TAdam&lt;/strong&gt; etc for each optimizer &lt;strong&gt;extending from&lt;/strong&gt; the &lt;strong&gt;base Class TOptimizer&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;3) Re-implement the existing &lt;strong&gt;Class TDLGradientDescent&lt;/strong&gt; with the new design as &lt;strong&gt;Class TSGD&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;  &lt;br /&gt;
+&lt;strong&gt;Final Design:&lt;/strong&gt;
+&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/tmva_optimizers_new.jpg&quot; alt=&quot;TMVAOptimizersNew&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I hope that this post helps to get a clear understanding of the new design and its workflow. And atlast I can start coding :D . So my next goal is to re-implement the basic stochastic gradient descent with my new design along with unit tests and make sure everything works good. So, from my next post, I’ll describe more related to coding :P&lt;/p&gt;
+
 </content>
  </entry>
  
@@ -51,18 +134,18 @@ Gradient descent goes “downhill” on a cost function &lt;code class=&quot;hig
 &lt;p&gt;There are three variants of gradient descent, which depends on how much data you use to cacluate the gradients and perform an update. They are as follows,&lt;/p&gt;
 
 &lt;h3 id=&quot;1-batch-gradient-descent&quot;&gt;1) Batch Gradient Descent:&lt;/h3&gt;
-&lt;p&gt;Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters &lt;script type=&quot;math/tex&quot;&gt;\theta&lt;/script&gt; for the entire training dataset. It supports maximum parallelism which is achieved by vectorization, but if the data is large, it cannot fit into the memory.&lt;/p&gt;
+&lt;p&gt;Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters &lt;script type=&quot;math/tex&quot;&gt;\theta&lt;/script&gt; for the entire training dataset. It supports maximum vectorization, but if the data is large, it cannot fit into the memory.&lt;/p&gt;
 
 &lt;script type=&quot;math/tex; mode=display&quot;&gt;\theta = \theta - \eta \cdot \nabla_\theta J( \theta)&lt;/script&gt;
 
 &lt;h3 id=&quot;2-stochastic-gradient-descent&quot;&gt;2) Stochastic Gradient Descent:&lt;/h3&gt;
-&lt;p&gt;Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit the parallelism by vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.&lt;/p&gt;
+&lt;p&gt;Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.&lt;/p&gt;
 
 &lt;script type=&quot;math/tex; mode=display&quot;&gt;\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i)}; y^{(i)})&lt;/script&gt;
 
 &lt;h3 id=&quot;3-mini-batch-gradient-descent&quot;&gt;3) Mini-Batch Gradient Descent:&lt;/h3&gt;
 
-&lt;p&gt;Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits parallelism to some extent and its update is also fast. It is the most preferred way of update among these variants.&lt;/p&gt;
+&lt;p&gt;Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits vectorization to some extent and its update is also fast. It is the most preferred way of update among these variants.&lt;/p&gt;
 
 &lt;script type=&quot;math/tex; mode=display&quot;&gt;\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i:i+n)}; y^{(i:i+n)})&lt;/script&gt;
 

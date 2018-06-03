@@ -98,18 +98,18 @@ Gradient descent goes “downhill” on a cost function <code class="highlighter
 <p>There are three variants of gradient descent, which depends on how much data you use to cacluate the gradients and perform an update. They are as follows,</p>
 
 <h3 id="1-batch-gradient-descent">1) Batch Gradient Descent:</h3>
-<p>Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters <script type="math/tex">\theta</script> for the entire training dataset. It supports maximum parallelism which is achieved by vectorization, but if the data is large, it cannot fit into the memory.</p>
+<p>Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters <script type="math/tex">\theta</script> for the entire training dataset. It supports maximum vectorization, but if the data is large, it cannot fit into the memory.</p>
 
 <script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta)</script>
 
 <h3 id="2-stochastic-gradient-descent">2) Stochastic Gradient Descent:</h3>
-<p>Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit the parallelism by vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.</p>
+<p>Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.</p>
 
 <script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i)}; y^{(i)})</script>
 
 <h3 id="3-mini-batch-gradient-descent">3) Mini-Batch Gradient Descent:</h3>
 
-<p>Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits parallelism to some extent and its update is also fast. It is the most preferred way of update among these variants.</p>
+<p>Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits vectorization to some extent and its update is also fast. It is the most preferred way of update among these variants.</p>
 
 <script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i:i+n)}; y^{(i:i+n)})</script>
 

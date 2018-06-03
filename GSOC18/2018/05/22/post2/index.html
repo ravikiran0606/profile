@@ -82,7 +82,7 @@
       <div class="post">
   <h1 class="post-title">Optimization Modules - Class Structure</h1>
   <span class="post-date">22 May 2018</span>
-  <p>In this blog post, I will be describing the class structure that can be potentially used to include the optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.</p>
+  <p>In this blog post, I will be describing the class structure that can be potentially used to include the Optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the Optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.</p>
 
 <p><strong>Initial Design:</strong>
 <br />
@@ -91,7 +91,90 @@
 
 <p>I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the <a href="https://www.tensorflow.org/api_guides/python/train">tensorflow optimizers</a>.</p>
 
-<p>This is my first approximate design of the optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.</p>
+<p>This is my first approximate design of the Optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.</p>
+
+<p><strong>Update: 1 June 2018</strong></p>
+
+<p>Atlast, after discussing with the mentors, I finally found the correct design solution for including the Optimizers in the existing framework and the design seems to be feasible.</p>
+
+<p><br /></p>
+<h2 id="current-workflow-of-one-step-of-optimizers-update">Current workflow of one step of Optimizer’s update:</h2>
+
+<p><br />
+<img src="/GSOC18//images/current_workflow1.jpg" alt="CurrentWorkflow" />
+<img src="/GSOC18//images/current_workflow2.jpg" alt="CurrentWorkflow" />
+<br /></p>
+
+<p>In the current workflow, the class MethodDL creates an instance of the class TDLGradientDescent as minimizer and it is initialized. For performing one step of the update, the minimizer’s Step() function is called. The minimizer’s Step() function in turn calls the class TDeepNet’s Forward(), Backward() and Update() functions. The class TDeepNet’s Update() function iterates through its layers and calls the class VGeneralLayer’s Update() function for each layer. And the <strong>class VGeneralLayer’s Update() function</strong> is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its <strong>UpdateWeights()</strong> and <strong>UpdateBiases()</strong> functions.</p>
+
+<p><br /></p>
+<h2 id="design-issues-and-its-solutions">Design Issues and its solutions:</h2>
+<p><br /></p>
+
+<p><strong>1) How to identify the type of update in the class VGeneralLayer like SGD or Adam etc ?</strong></p>
+
+<p>The current implementation by default performs only the schocastic gradient descent update. And there is no way of identifying the type of update depending on the type of Optimizer. So the solution would be to <strong>pass the reference to the Optimizer object</strong> from the class MethodDL down to the class VGeneralLayer.</p>
+
+<p><strong>2) Where to store the additional variables like sum of past gradients and other parameters specific to each Optimizer ?</strong></p>
+
+<p>Since these additional variables are needed for performing the updates, they need to be stored in the same class which actually performs the update. The current implementation actually performs the update in the class VGeneralLayer. So as per the current implementation, if we store all the additional variables in the class VGeneralLayer, that would look clumsy and strange since that is not the responsibility of the class VGeneralLayer. So I have decided to <strong>perform the actual update in the Optimizer class and store additional variables in it</strong>. This would look a bit cleaner.</p>
+
+<p><strong>3) Should we need to move the update function from the class GeneralLayer to Optimizer class ?</strong></p>
+
+<p><strong>Yes</strong>, we should move the update function to the Optimizer class since its the responsibility of the Optimizer to perform such an update.</p>
+
+<p><strong>4) Do we really need to test the convergence in the Optimizer class itself or move it to the train() method of class MethodDL ?</strong></p>
+
+<p>The current implementation actually has the test for convergence in the Optimizer class itself. But testing for convergence is not the responsibility of the Optimizer class but is the responsibility of the training procedure. So the better option is to <strong>move the test for convergence to the train() method of class MethodDL.</strong></p>
+
+<p><br /></p>
+<h2 id="modified-workflow-of-one-step-of-optimizers-update">Modified workflow of one step of Optimizer’s update:</h2>
+
+<p><br />
+<img src="/GSOC18//images/modified_workflow1.jpg" alt="ModifiedWorkflow" />
+<img src="/GSOC18//images/modified_workflow2.jpg" alt="ModifiedWorkflow" />
+<br /></p>
+
+<p>In the modified workflow, the class MethodDL creates an instance of the class TSGD ( i.e. specific type of optimizer as mentioned in the option ) as minimizer and it is initialized. Now for performing one step of the update, we actually pass the reference to the minimizer object to the class DeepNet’s Update() function. The class DeepNet’s Update() function iterates through each of its layer objects and pass the same reference of the minimizer object to the class VGeneralLayer’s Update() function. And the class VGeneralLayer’s Update() function now performs the update with the use of minimizer’s Step() function. So depending on the type of minimizer object used to perform the update, the corresponding update is performed. Here, the <strong>class TSGD’s Step() function</strong> is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its <strong>UpdateWeights()</strong> and <strong>UpdateBiases()</strong> functions.</p>
+
+<p><br /></p>
+<h2 id="api-changes">API Changes:</h2>
+<p><br /></p>
+
+<h3 id="in-class-methoddl-">In class MethodDL :</h3>
+
+<p>1) Modify the <strong>Struct TTrainingSettings</strong> to include the option for optimizer.</p>
+
+<p><br />
+<img src="/GSOC18//images/api_change1.jpg" alt="APIChange1" />
+<br /></p>
+
+<p>2) Create an instance of the <strong>particular type of optimizer</strong> in the Train() method based on the option specified. If no option is specified, default choice would be to use Adam optimizer.</p>
+
+<h3 id="in-file-functionsh-">In file Functions.h :</h3>
+
+<p>1) Create a enum class EOptimizer with various optimizers.</p>
+
+<p><br />
+<img src="/GSOC18//images/api_change2.jpg" alt="APIChange2" />
+<br /></p>
+
+<h3 id="other-files">Other files:</h3>
+
+<p>1) Create a <strong>base class TOptimizer</strong> with the basic functions. ( Refer to the class diagram below. )</p>
+
+<p>2) Create various classes like <strong>Class TSGD, Class TAdam</strong> etc for each optimizer <strong>extending from</strong> the <strong>base Class TOptimizer</strong>.</p>
+
+<p>3) Re-implement the existing <strong>Class TDLGradientDescent</strong> with the new design as <strong>Class TSGD</strong>.</p>
+
+<p><br />  <br />
+<strong>Final Design:</strong>
+<br />
+<img src="/GSOC18//images/tmva_optimizers_new.jpg" alt="TMVAOptimizersNew" />
+<br /></p>
+
+<p>I hope that this post helps to get a clear understanding of the new design and its workflow. And atlast I can start coding :D . So my next goal is to re-implement the basic stochastic gradient descent with my new design along with unit tests and make sure everything works good. So, from my next post, I’ll describe more related to coding :P</p>
+
 
 </div>
 
