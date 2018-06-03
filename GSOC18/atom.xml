@@ -4,7 +4,7 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-06-03T14:30:32+05:30</updated>
+ <updated>2018-06-03T22:08:28+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
@@ -14,21 +14,10 @@
  
  <entry>
    <title>Optimization Modules - Class Structure</title>
-   <link href="http://localhost:4000/2018/05/22/post2/"/>
-   <updated>2018-05-22T00:00:00+05:30</updated>
-   <id>http://localhost:4000/2018/05/22/post2</id>
+   <link href="http://localhost:4000/2018/06/01/post2/"/>
+   <updated>2018-06-01T00:00:00+05:30</updated>
+   <id>http://localhost:4000/2018/06/01/post2</id>
    <content type="html">&lt;p&gt;In this blog post, I will be describing the class structure that can be potentially used to include the Optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the Optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Initial Design:&lt;/strong&gt;
-&lt;br /&gt;
-&lt;img src=&quot;/GSOC18//images/tmva_optimizers.jpg&quot; alt=&quot;TMVAOptimizers&quot; /&gt;
-&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;I am thinking to build a class structure similar to the one in the figure above. This design is inspired from the &lt;a href=&quot;https://www.tensorflow.org/api_guides/python/train&quot;&gt;tensorflow optimizers&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;This is my first approximate design of the Optimizers in the TMVA submodule. I will update my progress with the new design and approach after discussion with the mentors.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Update: 1 June 2018&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;Atlast, after discussing with the mentors, I finally found the correct design solution for including the Optimizers in the existing framework and the design seems to be feasible.&lt;/p&gt;
 
