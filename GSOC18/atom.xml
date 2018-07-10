@@ -4,7 +4,7 @@
  <title>GSoC'18 @ CERN</title>
  <link href="http://localhost:4000/atom.xml" rel="self"/>
  <link href="http://localhost:4000/"/>
- <updated>2018-06-03T22:08:28+05:30</updated>
+ <updated>2018-07-11T01:01:55+05:30</updated>
  <id>http://localhost:4000</id>
  <author>
    <name>Ravi Kiran S</name>
@@ -13,10 +13,100 @@
 
  
  <entry>
+   <title>SGD Optimizer - Implementation and Testing</title>
+   <link href="http://localhost:4000/2018/07/09/sgd/"/>
+   <updated>2018-07-09T00:00:00+05:30</updated>
+   <id>http://localhost:4000/2018/07/09/sgd</id>
+   <content type="html">&lt;p&gt;In this blog post, I will be explaning the implementation of the SGD Optimizer with and without momentum approach. I will also be explaning the methodology I used for testing the correctness of the optimizer.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;sgd-optimizer&quot;&gt;SGD Optimizer:&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Stochastic Gradient Descent is the one of the basic optimization algorithms that is used for training the Deep Neural Networks. I have implemented the SGD Optimization algorithm with and without momentum method. The finalized class diagram for the VOptimizer class and the TSGD class, which is derived from the VOptimizer class is shown below,&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/sgd_class_diagram.jpg&quot; alt=&quot;SGD Optimizer&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Here, &lt;code class=&quot;highlighter-rouge&quot;&gt;Step()&lt;/code&gt; function is implemented in the base class VOptimizer. And the &lt;code class=&quot;highlighter-rouge&quot;&gt;UpdateWeights() and UpdateBiases()&lt;/code&gt; functions are pure virtual functions. So other optimizer classes extending from the base class VOptimizer, for example: TSGD class must implement the &lt;code class=&quot;highlighter-rouge&quot;&gt;UpdateWeights() and UpdateBiases()&lt;/code&gt; functions. The &lt;code class=&quot;highlighter-rouge&quot;&gt;fPastWeightGradients and fPastBiasGradients&lt;/code&gt; store the accumulation of the past weight and past bias gradients respectively.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;momentum-update&quot;&gt;Momentum Update:&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;With Stochastic Gradient Descent we don’t compute the exact derivative of our loss function. Instead, we’re estimating it on a small batch. This means we’re not always going in the optimal direction, because our derivatives are ‘noisy’. So, exponentially weighed averages can provide us a better estimate which is closer to the actual derivative than our noisy calculations. This is one reason why momentum might work better than classic SGD.&lt;/p&gt;
+
+&lt;p&gt;The other reason lies in ravines. Ravine is an area, where the surface curves much more steeply in one dimension than in another. Ravines are common near local minimas in deep learning and SGD has troubles getting out of them. SGD will tend to oscillate across the narrow ravine since the negative gradient will point down one of the steep sides rather than along the ravine towards the optimum. Momentum helps accelerate gradients in the right direction.&lt;/p&gt;
+
+&lt;p&gt;Thus, the momentum update is implemented as follows, ( similar to the tensorflow implementation )&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;accumulation = momentum * accumulation + gradient
+variable -= learning_rate * accumulation
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;So, one step of update may be performed as,&lt;/p&gt;
+
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;% &lt;![CDATA[
+\begin{align}
+\begin{split}
+v_t &amp;= \gamma v_{t-1} + \nabla_\theta J( \theta) \\  
+\theta &amp;= \theta - \eta v_t
+\end{split}
+\end{align} %]]&gt;&lt;/script&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;testing-the-optimizer&quot;&gt;Testing the Optimizer:&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;And now, for testing the optimizer, there is no exact methodology that can be used. One possible approach would be to test the convergence of the training and testing error during the training procedure. So the unit tests is created as follows,&lt;/p&gt;
+
+&lt;p&gt;Let, X = Random Matrix ( nSamples x nFeatures ),&lt;br /&gt;
+K = Random Matrix ( nFeatures x nOutput ),&lt;br /&gt;
+Y = X * K ( nSamples x nOutput ) ( Generated one ).&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I created a simple 3 layer DeepNet with the following architecture,&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/sgd_dnn_arch.jpg&quot; alt=&quot;Testing DNN Architecture&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;I created the trainingData and testingData in a similar manner as described above. And trained my DeepNet to learn this linear function mapping i.e. Y = X * K.&lt;/p&gt;
+
+&lt;p&gt;Now for testing, one method is to observe the convergence of the training and testing error. They converged very well in a quite number of iterations as below,&lt;/p&gt;
+
+&lt;div&gt;
+    &lt;a href=&quot;https://plot.ly/~ravikiran0606/6/?share_key=lJGwP6gA4wYq23HB78U3YM&quot; target=&quot;_blank&quot; title=&quot;SGD without Momentum&quot; style=&quot;display: block; text-align: center;&quot;&gt;&lt;img src=&quot;https://plot.ly/~ravikiran0606/6.png?share_key=lJGwP6gA4wYq23HB78U3YM&quot; alt=&quot;SGD without Momentum&quot; style=&quot;max-width: 100%;width: 600px;&quot; width=&quot;600&quot; onerror=&quot;this.onerror=null;this.src='https://plot.ly/404.png';&quot; /&gt;&lt;/a&gt;
+    &lt;script data-plotly=&quot;ravikiran0606:6&quot; sharekey-plotly=&quot;lJGwP6gA4wYq23HB78U3YM&quot; src=&quot;https://plot.ly/embed.js&quot; async=&quot;&quot;&gt;&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;div&gt;
+    &lt;a href=&quot;https://plot.ly/~ravikiran0606/3/?share_key=pQzr1aQJE3K9hLBjWlpJ5W&quot; target=&quot;_blank&quot; title=&quot;SGD with Momentum&quot; style=&quot;display: block; text-align: center;&quot;&gt;&lt;img src=&quot;https://plot.ly/~ravikiran0606/3.png?share_key=pQzr1aQJE3K9hLBjWlpJ5W&quot; alt=&quot;SGD with Momentum&quot; style=&quot;max-width: 100%;width: 600px;&quot; width=&quot;600&quot; onerror=&quot;this.onerror=null;this.src='https://plot.ly/404.png';&quot; /&gt;&lt;/a&gt;
+    &lt;script data-plotly=&quot;ravikiran0606:3&quot; sharekey-plotly=&quot;pQzr1aQJE3K9hLBjWlpJ5W&quot; src=&quot;https://plot.ly/embed.js&quot; async=&quot;&quot;&gt;&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Another method is to create a identity matrix I = Identity Matrix ( batchSize x nFeatures ) and give this as Input to the DeepNet and forward it and get the output at the last layer. Let this output be Y’ ( batchSize x nOutput ).&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now, Since the DeepNet is trying to mimic the function Y = X * K, this output Y’ should be equal to K. For this to be true, there is one constrain to be satisfied that the batchSize and nFeatures should be equal so that we can construct the Identity Matrix I as a square matrix with diagonal elements being equal to 1.0. And I got the following results by comparing the Y’ with K.&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;img src=&quot;/GSOC18//images/sgd_tests_relative_error.jpg&quot; alt=&quot;Testing SGD Optimizer - Relative Error&quot; /&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h2 id=&quot;references&quot;&gt;References:&lt;/h2&gt;
+
+&lt;p&gt;1)&lt;a href=&quot;https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d&quot;&gt; SGD with Momentum. &lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;2)&lt;a href=&quot;https://www.tensorflow.org/api_docs/python/tf/train/MomentumOptimizer&quot;&gt; Tensorflow Implementation of SGD Optimizer. &lt;/a&gt;&lt;/p&gt;
+</content>
+ </entry>
+ 
+ <entry>
    <title>Optimization Modules - Class Structure</title>
-   <link href="http://localhost:4000/2018/06/01/post2/"/>
+   <link href="http://localhost:4000/2018/06/01/design/"/>
    <updated>2018-06-01T00:00:00+05:30</updated>
-   <id>http://localhost:4000/2018/06/01/post2</id>
+   <id>http://localhost:4000/2018/06/01/design</id>
    <content type="html">&lt;p&gt;In this blog post, I will be describing the class structure that can be potentially used to include the Optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the Optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.&lt;/p&gt;
 
 &lt;p&gt;Atlast, after discussing with the mentors, I finally found the correct design solution for including the Optimizers in the existing framework and the design seems to be feasible.&lt;/p&gt;
@@ -104,9 +194,9 @@
  
  <entry>
    <title>Optimization Modules - A Brief Overview</title>
-   <link href="http://localhost:4000/2018/05/16/post1/"/>
+   <link href="http://localhost:4000/2018/05/16/optimizers/"/>
    <updated>2018-05-16T00:00:00+05:30</updated>
-   <id>http://localhost:4000/2018/05/16/post1</id>
+   <id>http://localhost:4000/2018/05/16/optimizers</id>
    <content type="html">&lt;p&gt;In this blog post, I would like to give a brief overview of the existing gradient descent optimization algorithms that are available. There are lots of good resources available online. You can check them at the References section at the end of this post.&lt;/p&gt;
 
 &lt;p&gt;The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.&lt;/p&gt;
@@ -373,7 +463,7 @@ m_t &amp;= \beta_1 m_{t-1} + (1 - \beta_1) g_t\\
    <link href="http://localhost:4000/2018/05/06/intro/"/>
    <updated>2018-05-06T00:00:00+05:30</updated>
    <id>http://localhost:4000/2018/05/06/intro</id>
-   <content type="html">&lt;p&gt;Hi Everyone, I am glad to inform that I have been selected as a &lt;strong&gt;Student Developer in Google Summer of Code 2018&lt;/strong&gt; at CERN-HSF. I am really excited to contribute to the project. I will be working on the project &lt;strong&gt;“Additional Machine Learning Project Ideas and Areas of Interest”&lt;/strong&gt;.&lt;/p&gt;
+   <content type="html">&lt;p&gt;Hi Everyone, I am glad to inform that I have been selected as a &lt;strong&gt;Student Developer in Google Summer of Code 2018&lt;/strong&gt; at CERN-HSF. I am really excited to contribute to the project. I will be working on the project &lt;strong&gt;“Development of the Deep Learning Optimization Algorithms in TMVA.”&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/GSOC18//images/gsoc18.jpg&quot; alt=&quot;GSoC'18&quot; /&gt;&lt;/p&gt;
 

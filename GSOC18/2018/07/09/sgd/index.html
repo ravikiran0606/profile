@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      SGD Optimizer - Implementation and Testing &middot; GSoC'18 @ CERN
+    
+  </title>
+
+  <!--Mathjax-->
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/GSOC18/public/css/poole.css">
+  <link rel="stylesheet" href="/GSOC18/public/css/syntax.css">
+  <link rel="stylesheet" href="/GSOC18/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/GSOC18/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/GSOC18/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container">
+    <div class="sidebar-about">
+      <h1>
+        <a href="/GSOC18/">
+          GSoC'18 @ CERN
+        </a>
+      </h1>
+      <p class="lead">Google Summer of Code 2018 Progress @ CERN-HSF by Ravi Kiran S.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/GSOC18/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/GSOC18//about/">About</a>
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <p>Copyright &copy; Jekyll Themes 2018</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">SGD Optimizer - Implementation and Testing</h1>
+  <span class="post-date">09 Jul 2018</span>
+  <p>In this blog post, I will be explaning the implementation of the SGD Optimizer with and without momentum approach. I will also be explaning the methodology I used for testing the correctness of the optimizer.</p>
+
+<p><br /></p>
+<h2 id="sgd-optimizer">SGD Optimizer:</h2>
+<p><br /></p>
+
+<p>Stochastic Gradient Descent is the one of the basic optimization algorithms that is used for training the Deep Neural Networks. I have implemented the SGD Optimization algorithm with and without momentum method. The finalized class diagram for the VOptimizer class and the TSGD class, which is derived from the VOptimizer class is shown below,</p>
+
+<p><br />
+<img src="/GSOC18//images/sgd_class_diagram.jpg" alt="SGD Optimizer" />
+<br /></p>
+
+<p>Here, <code class="highlighter-rouge">Step()</code> function is implemented in the base class VOptimizer. And the <code class="highlighter-rouge">UpdateWeights() and UpdateBiases()</code> functions are pure virtual functions. So other optimizer classes extending from the base class VOptimizer, for example: TSGD class must implement the <code class="highlighter-rouge">UpdateWeights() and UpdateBiases()</code> functions. The <code class="highlighter-rouge">fPastWeightGradients and fPastBiasGradients</code> store the accumulation of the past weight and past bias gradients respectively.</p>
+
+<p><br /></p>
+<h2 id="momentum-update">Momentum Update:</h2>
+<p><br /></p>
+
+<p>With Stochastic Gradient Descent we don’t compute the exact derivative of our loss function. Instead, we’re estimating it on a small batch. This means we’re not always going in the optimal direction, because our derivatives are ‘noisy’. So, exponentially weighed averages can provide us a better estimate which is closer to the actual derivative than our noisy calculations. This is one reason why momentum might work better than classic SGD.</p>
+
+<p>The other reason lies in ravines. Ravine is an area, where the surface curves much more steeply in one dimension than in another. Ravines are common near local minimas in deep learning and SGD has troubles getting out of them. SGD will tend to oscillate across the narrow ravine since the negative gradient will point down one of the steep sides rather than along the ravine towards the optimum. Momentum helps accelerate gradients in the right direction.</p>
+
+<p>Thus, the momentum update is implemented as follows, ( similar to the tensorflow implementation )</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>accumulation = momentum * accumulation + gradient
+variable -= learning_rate * accumulation
+</code></pre></div></div>
+
+<p>So, one step of update may be performed as,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \nabla_\theta J( \theta) \\  
+\theta &= \theta - \eta v_t
+\end{split}
+\end{align} %]]></script>
+
+<p><br /></p>
+<h2 id="testing-the-optimizer">Testing the Optimizer:</h2>
+<p><br /></p>
+
+<p>And now, for testing the optimizer, there is no exact methodology that can be used. One possible approach would be to test the convergence of the training and testing error during the training procedure. So the unit tests is created as follows,</p>
+
+<p>Let, X = Random Matrix ( nSamples x nFeatures ),<br />
+K = Random Matrix ( nFeatures x nOutput ),<br />
+Y = X * K ( nSamples x nOutput ) ( Generated one ).<br /></p>
+
+<p>I created a simple 3 layer DeepNet with the following architecture,</p>
+
+<p><br />
+<img src="/GSOC18//images/sgd_dnn_arch.jpg" alt="Testing DNN Architecture" />
+<br /></p>
+
+<p>I created the trainingData and testingData in a similar manner as described above. And trained my DeepNet to learn this linear function mapping i.e. Y = X * K.</p>
+
+<p>Now for testing, one method is to observe the convergence of the training and testing error. They converged very well in a quite number of iterations as below,</p>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/6/?share_key=lJGwP6gA4wYq23HB78U3YM" target="_blank" title="SGD without Momentum" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/6.png?share_key=lJGwP6gA4wYq23HB78U3YM" alt="SGD without Momentum" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:6" sharekey-plotly="lJGwP6gA4wYq23HB78U3YM" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/3/?share_key=pQzr1aQJE3K9hLBjWlpJ5W" target="_blank" title="SGD with Momentum" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/3.png?share_key=pQzr1aQJE3K9hLBjWlpJ5W" alt="SGD with Momentum" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:3" sharekey-plotly="pQzr1aQJE3K9hLBjWlpJ5W" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>Another method is to create a identity matrix I = Identity Matrix ( batchSize x nFeatures ) and give this as Input to the DeepNet and forward it and get the output at the last layer. Let this output be Y’ ( batchSize x nOutput ).<br /></p>
+
+<p>Now, Since the DeepNet is trying to mimic the function Y = X * K, this output Y’ should be equal to K. For this to be true, there is one constrain to be satisfied that the batchSize and nFeatures should be equal so that we can construct the Identity Matrix I as a square matrix with diagonal elements being equal to 1.0. And I got the following results by comparing the Y’ with K.</p>
+
+<p><br />
+<img src="/GSOC18//images/sgd_tests_relative_error.jpg" alt="Testing SGD Optimizer - Relative Error" />
+<br /></p>
+
+<p><br /></p>
+<h2 id="references">References:</h2>
+
+<p>1)<a href="https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d"> SGD with Momentum. </a></p>
+
+<p>2)<a href="https://www.tensorflow.org/api_docs/python/tf/train/MomentumOptimizer"> Tensorflow Implementation of SGD Optimizer. </a></p>
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/06/01/design/">
+            Optimization Modules - Class Structure
+            <small>01 Jun 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/16/optimizers/">
+            Optimization Modules - A Brief Overview
+            <small>16 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/05/06/intro/">
+            GSoC'18 @ CERN-HSF
+            <small>06 May 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+    </div>
+
+  </body>
+</html>
