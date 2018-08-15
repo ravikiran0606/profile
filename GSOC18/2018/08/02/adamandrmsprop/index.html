@@ -11,7 +11,7 @@
 
   <title>
     
-      GSoC'18 @ CERN &middot; Professional Blog
+      Adam and RMSProp Optimizer - Implementation and Testing:- &middot; GSoC'18 @ CERN
     
   </title>
 
@@ -87,99 +87,10 @@
 
 
     <div class="content container">
-      <div class="posts">
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/08/13/conclusion/">
-        Conclusion:-
-      </a>
-    </h1>
-
-    <span class="post-date">13 Aug 2018</span>
-
-    <p>So, I <strong>successfully completed my GSoC’18 Project :D</strong>. I had a wonderfull summer doing a really cool project. I learned a lot especially the colloborative work culture, object oriented design skills, colloborating and working using GIT and mainly the in-depth understanding of the various deep learning optimization algorithms, the math behind them etc.</p>
-
-<p>I need to thank all my mentors at CERN especially <a href="https://www.linkedin.com/in/stwunsch/">Dr. Stefan Wunch</a> and <a href="https://www.linkedin.com/in/lorenzo-moneta-982b902/">Dr. Lorenzo Moneta</a> for guiding me throughout my journey!</p>
-
-<p>I will continue contributing to ROOT-TMVA project. I really feel proud to be one of the contributors of the great project <a href="https://root.cern/">ROOT Software framework</a> by CERN.</p>
-
-<p><img src="/GSOC18//images/happiness.jpg" alt="happiness" /></p>
-
-  </div>
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/08/12/prs/">
-        List of PRs submitted:-
-      </a>
-    </h1>
-
-    <span class="post-date">12 Aug 2018</span>
-
-    <p>Here are the list of Pull Requests that are submitted to the <strong>root-project/root master branch</strong> as a result of the GSoC project.</p>
-
-<p>1) [TMVA] API-Support for SGD Optimizer: <a href="https://github.com/root-project/root/pull/2309">PR #2309</a></p>
-
-<p>2) [TMVA] Add operations needed for performing optimizer updates: <a href="https://github.com/root-project/root/pull/2315">PR #2315</a></p>
-
-<p>3) [TMVA] Add new Evaluation Metric ( meanAbsoluteError between two matrices ): <a href="https://github.com/root-project/root/pull/2376">PR #2376</a></p>
-
-<p>4) [TMVA] Refactor MethodDL Tests for Optimization: <a href="https://github.com/root-project/root/pull/2379">PR #2379</a></p>
-
-<p>5) [TMVA] Add API Support for Adam Optimizer: <a href="https://github.com/root-project/root/pull/2438">PR #2438</a></p>
-
-<p>6) [TMVA] Add API Support for Adagrad Optimizer: <a href="https://github.com/root-project/root/pull/2439">PR #2439</a></p>
-
-<p>7) [TMVA] Add API Support for RMSProp Optimizer: <a href="https://github.com/root-project/root/pull/2440">PR #2440</a></p>
-
-<p>8) [TMVA] Add API Support for Adadelta Optimizer: <a href="https://github.com/root-project/root/pull/2441">PR #2441</a></p>
-
-<p>The link to all PRs: <a href="https://github.com/root-project/root/pulls?utf8=%E2%9C%93&amp;q=is%3Apr+author%3Aravikiran0606+">Here</a></p>
-
-  </div>
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/08/10/comparison/">
-        Comparison of various optimizers and future work:-
-      </a>
-    </h1>
-
-    <span class="post-date">10 Aug 2018</span>
-
-    <p>In this blog post, I will be comparing all the optimizers on the <a href="http://root.cern.ch/files/tmva_class_example.root">same dataset</a> that is used for performing classification using TMVA.</p>
-
-<div>
-    <a href="https://plot.ly/~ravikiran0606/45/?share_key=nJ69a8LTr8AdxGq8LxozR3" target="_blank" title="TMVA Optimizers - Training Errors" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/45.png?share_key=nJ69a8LTr8AdxGq8LxozR3" alt="TMVA Optimizers - Training Errors" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="ravikiran0606:45" sharekey-plotly="nJ69a8LTr8AdxGq8LxozR3" src="https://plot.ly/embed.js" async=""></script>
-</div>
-
-<div>
-    <a href="https://plot.ly/~ravikiran0606/47/?share_key=4Z6uv7ZaWyQgzsoHun8ETv" target="_blank" title="TMVA Optimizers - Test Errors" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/47.png?share_key=4Z6uv7ZaWyQgzsoHun8ETv" alt="TMVA Optimizers - Test Errors" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="ravikiran0606:47" sharekey-plotly="4Z6uv7ZaWyQgzsoHun8ETv" src="https://plot.ly/embed.js" async=""></script>
-</div>
-
-<p>The above figures show the convergence of the training and testing erros of various optimizers during the integration tests ( methodDL tests ).</p>
-
-<h2 id="future-work">Future Work:</h2>
-
-<p>1) Implement other optimizers like <strong>Adamax, Nadam and Nesterov accelerated SGD</strong> optimizers.<br />
-2) Add <strong>Weight Decay of learning rate</strong> implementation to optimizers.<br />
-3) <strong>Benchmark the individual optimizers</strong> on separate datasets with tensorflow.</p>
-
-  </div>
-  
-  <div class="post">
-    <h1 class="post-title">
-      <a href="/GSOC18//2018/08/02/adamandrmsprop/">
-        Adam and RMSProp Optimizer - Implementation and Testing:-
-      </a>
-    </h1>
-
-    <span class="post-date">02 Aug 2018</span>
-
-    <p>In this blog post, I’ll be explaining the implementation of the Adam Optimizer, RMSProp optimizer with and without momentum approach.</p>
+      <div class="post">
+  <h1 class="post-title">Adam and RMSProp Optimizer - Implementation and Testing:-</h1>
+  <span class="post-date">02 Aug 2018</span>
+  <p>In this blog post, I’ll be explaining the implementation of the Adam Optimizer, RMSProp optimizer with and without momentum approach.</p>
 
 <h2 id="rmsprop-optimizer">RMSProp Optimizer:</h2>
 
@@ -260,18 +171,42 @@ v_t &= \beta_2 v_{t-1} + (1-\beta_2) \nabla_\theta^2 J( \theta) \\
 
 <p>2) <a href="https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer">Adam Optimizer - Tensorflow Implementation</a></p>
 
-  </div>
-  
 </div>
 
-<div class="pagination">
-  
-    <a class="pagination-item older" href="/GSOC18/page2">Older</a>
-  
-  
-    <span class="pagination-item newer">Newer</span>
-  
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/13/conclusion/">
+            Conclusion:-
+            <small>13 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/12/prs/">
+            List of PRs submitted:-
+            <small>12 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/10/comparison/">
+            Comparison of various optimizers and future work:-
+            <small>10 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
 </div>
+
     </div>
 
   </body>

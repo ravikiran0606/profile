@@ -11,7 +11,7 @@
 
   <title>
     
-      GSoC'18 @ CERN-HSF:- &middot; GSoC'18 @ CERN
+      Comparison of various optimizers and future work:- &middot; GSoC'18 @ CERN
     
   </title>
 
@@ -88,24 +88,27 @@
 
     <div class="content container">
       <div class="post">
-  <h1 class="post-title">GSoC'18 @ CERN-HSF:-</h1>
-  <span class="post-date">06 May 2018</span>
-  <p>Hi Everyone, I am glad to inform that I have been selected as a <strong>Student Developer in Google Summer of Code 2018</strong> at CERN-HSF. I am really excited to contribute to the project. I will be working on the project <strong>“Development of the Deep Learning Optimization Algorithms in TMVA.”</strong>.</p>
+  <h1 class="post-title">Comparison of various optimizers and future work:-</h1>
+  <span class="post-date">10 Aug 2018</span>
+  <p>In this blog post, I will be comparing all the optimizers on the <a href="http://root.cern.ch/files/tmva_class_example.root">same dataset</a> that is used for performing classification using TMVA.</p>
 
-<p><img src="/GSOC18//images/gsoc18.jpg" alt="GSoC'18" /></p>
+<div>
+    <a href="https://plot.ly/~ravikiran0606/45/?share_key=nJ69a8LTr8AdxGq8LxozR3" target="_blank" title="TMVA Optimizers - Training Errors" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/45.png?share_key=nJ69a8LTr8AdxGq8LxozR3" alt="TMVA Optimizers - Training Errors" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:45" sharekey-plotly="nJ69a8LTr8AdxGq8LxozR3" src="https://plot.ly/embed.js" async=""></script>
+</div>
 
-<p><strong>CERN-HSF</strong> (High-Energy Physics Software Foundation) is the umbrella organization for high-energy physics-related projects in GSoC. The <a href="http://hepsoftwarefoundation.org/">HEP Software Foundation</a> facilitates the coordination of common international efforts in high-energy physics software and computing.</p>
+<div>
+    <a href="https://plot.ly/~ravikiran0606/47/?share_key=4Z6uv7ZaWyQgzsoHun8ETv" target="_blank" title="TMVA Optimizers - Test Errors" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/47.png?share_key=4Z6uv7ZaWyQgzsoHun8ETv" alt="TMVA Optimizers - Test Errors" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:47" sharekey-plotly="4Z6uv7ZaWyQgzsoHun8ETv" src="https://plot.ly/embed.js" async=""></script>
+</div>
 
-<p>I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). <strong>ROOT</strong> is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The <strong>Toolkit for Multivariate Data Analysis with ROOT (TMVA)</strong> is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.</p>
+<p>The above figures show the convergence of the training and testing erros of various optimizers during the integration tests ( methodDL tests ).</p>
 
-<blockquote>
-  <p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.<br /><br />
-The project aims to implement various <strong>Optimization Modules ( Momentum-based, Nesterov accelerated momentum, Adagrad, RMSProp, Adadelta, Adamax, Adam, Nadam, AMSGrad etc )</strong> in Machine learning.</p>
-</blockquote>
+<h2 id="future-work">Future Work:</h2>
 
-<p>More Information about the project can be found <a href="https://summerofcode.withgoogle.com/projects/#5779525665816576">Here</a></p>
-
-<p>I hope that this summer will be interesting, challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
+<p>1) Implement other optimizers like <strong>Adamax, Nadam and Nesterov accelerated SGD</strong> optimizers.<br />
+2) Add <strong>Weight Decay of learning rate</strong> implementation to optimizers.<br />
+3) <strong>Benchmark the individual optimizers</strong> on separate datasets with tensorflow.</p>
 
 </div>
 
@@ -133,9 +136,9 @@ The project aims to implement various <strong>Optimization Modules ( Momentum-ba
     
       <li>
         <h3>
-          <a href="/GSOC18//2018/08/10/comparison/">
-            Comparison of various optimizers and future work:-
-            <small>10 Aug 2018</small>
+          <a href="/GSOC18//2018/08/02/adamandrmsprop/">
+            Adam and RMSProp Optimizer - Implementation and Testing:-
+            <small>02 Aug 2018</small>
           </a>
         </h3>
       </li>

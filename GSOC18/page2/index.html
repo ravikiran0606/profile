@@ -75,6 +75,10 @@
           
         
       
+        
+          
+        
+      
     </nav>
 
     <p>Copyright &copy; Jekyll Themes 2018</p>
@@ -87,29 +91,526 @@
   
   <div class="post">
     <h1 class="post-title">
-      <a href="/GSOC18//2018/05/06/intro/">
-        GSoC'18 @ CERN-HSF
+      <a href="/GSOC18//2018/07/20/adagradandadadelta/">
+        Adagrad and Adadelta Optimizers - Implementation and Testing:-
       </a>
     </h1>
 
-    <span class="post-date">06 May 2018</span>
+    <span class="post-date">20 Jul 2018</span>
 
-    <p>Hi Everyone, I am glad to inform that I have been selected as a <strong>Student Developer in Google Summer of Code 2018</strong> at CERN-HSF. I am really excited to contribute to the project. I will be working on the project <strong>“Development of the Deep Learning Optimization Algorithms in TMVA.”</strong>.</p>
+    <p>In this blog post, I’ll be explaining the implementation of Adagrad and Adadelta optimizers.</p>
 
-<p><img src="/GSOC18//images/gsoc18.jpg" alt="GSoC'18" /></p>
+<h2 id="adagrad">Adagrad:</h2>
 
-<p><strong>CERN-HSF</strong> (High-Energy Physics Software Foundation) is the umbrella organization for high-energy physics-related projects in GSoC. The <a href="http://hepsoftwarefoundation.org/">HEP Software Foundation</a> facilitates the coordination of common international efforts in high-energy physics software and computing.</p>
+<p>AdaGrad is an optimization method that allows different step sizes for different features. It increases the influence of rare but informative features i.e. It adapts the learning rate to the parameters, performing larger updates for infrequent and smaller updates for frequent parameters. For this reason, it is well-suited for dealing with sparse data.</p>
 
-<p>I will be working on TMVA which is a submodule of ROOT Project ( One of the famous projects by CERN ). <strong>ROOT</strong> is a modular scientific software framework. It provides all the functionalities needed to deal with big data processing, statistical analysis, visualisation and storage. It is mainly written in C++ but integrated with other languages such as Python and R. The <strong>Toolkit for Multivariate Data Analysis with ROOT (TMVA)</strong> is a standalone project that provides a ROOT-integrated machine learning environment for the processing and parallel evaluation of sophisticated multivariate classification techniques.</p>
+<p>Thus, the update is implemented as follows, ( similar to the tensorflow implementation )</p>
 
-<blockquote>
-  <p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.<br /><br />
-The project aims to implement various <strong>Optimization Modules ( Momentum-based, Nesterov accelerated momentum, Adagrad, RMSProp, Adadelta, Adamax, Adam, Nadam, AMSGrad etc )</strong> in Machine learning.</p>
-</blockquote>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vt = Vt-1 + currentSquaredGradients
+theta = theta - learningRate * currentGradients / (sqrt(Vt + epsilon))
+</code></pre></div></div>
 
-<p>More Information about the project can be found <a href="https://summerofcode.withgoogle.com/projects/#5779525665816576">Here</a></p>
+<p>So, one step of update is performed as,</p>
 
-<p>I hope that this summer will be interesting, challenging and productive. In my next post, I’ll give an overview of the optimization modules.</p>
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= v_{t-1} + \nabla_\theta^2 J( \theta) \\  
+\theta &= \theta - \dfrac{\eta}{\sqrt{v_t + \epsilon}} \nabla_\theta J( \theta)
+\end{split}
+\end{align} %]]></script>
+
+<h2 id="testing-adagrad">Testing Adagrad:</h2>
+
+<p>I used the same unit tests approach as for SGD optimizer. Have a look at <strong>Testing the SGD optimizer post</strong>.</p>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/33/?share_key=52ETON5ZthCr9zXsqp3XN6" target="_blank" title="ADAGRADUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/33.png?share_key=52ETON5ZthCr9zXsqp3XN6" alt="ADAGRADUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:33" sharekey-plotly="52ETON5ZthCr9zXsqp3XN6" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>The above figure shows the convergence of the training and testing errors for the Adagrad Optimizer during the unit tests.</p>
+
+<h2 id="adadelta">Adadelta:</h2>
+
+<p>Adadelta is an extension of Adagrad that tries to reduce the monotonically decreasing learning rate. Instead of accumulating all past squared gradients, Adadelta stores only the window of accumulated past gradients to some fixed window size <script type="math/tex">w</script>.</p>
+
+<p>Thus, the update is implemented as follows, ( similar to the tensorflow implementation )</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vt = rho * Vt-1 + (1-rho) * currentSquaredGradients
+currentUpdates = sqrt(Wt + epsilon) * currentGradients / sqrt(Vt + epsilon)
+theta = theta - learningRate * currentUpdates
+Wt = rho * Wt-1 + (1-rho) * currentSquaredUpdates
+
+</code></pre></div></div>
+
+<p>So, one step of update is performed as,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \rho v_{t-1} + (1-\rho) \nabla_\theta^2 J( \theta) \\ 
+\Delta\theta &= \dfrac{\sqrt{w_t + \epsilon}}{\sqrt{v_t + \epsilon}} \nabla_\theta J( \theta) \\
+\theta &= \theta - \eta \Delta\theta \\ 
+w_t &= \rho w_{t-1} + (1-\rho) \Delta\theta^2
+\end{split}
+\end{align} %]]></script>
+
+<h2 id="testing-adadelta">Testing Adadelta:</h2>
+
+<p>I used the same unit tests approach as for SGD optimizer. Have a look at <strong>Testing the SGD optimizer post</strong>.</p>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/34/?share_key=48EXVp2d3ovHjvc3irP914" target="_blank" title="ADADELTAUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/34.png?share_key=48EXVp2d3ovHjvc3irP914" alt="ADADELTAUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:34" sharekey-plotly="48EXVp2d3ovHjvc3irP914" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>The above figure shows the convergence of the training and testing errors for the Adadelta Optimizer during the unit tests.</p>
+
+<h2 id="references">References:</h2>
+
+<p>1) <a href="https://www.tensorflow.org/api_docs/python/tf/train/AdagradOptimizer">Adagrad Optimizer - Tensorflow Implementation</a></p>
+
+<p>2) <a href="https://www.tensorflow.org/api_docs/python/tf/train/AdadeltaOptimizer">Adadelta Optimizer - Tensorflow Implementation</a></p>
+
+  </div>
+  
+  <div class="post">
+    <h1 class="post-title">
+      <a href="/GSOC18//2018/07/09/sgd/">
+        SGD Optimizer - Implementation and Testing:-
+      </a>
+    </h1>
+
+    <span class="post-date">09 Jul 2018</span>
+
+    <p>In this blog post, I will be explaning the implementation of the SGD Optimizer with and without momentum approach. I will also be explaning the methodology I used for testing the correctness of the optimizer.</p>
+
+<h2 id="sgd-optimizer">SGD Optimizer:</h2>
+
+<p>Stochastic Gradient Descent is the one of the basic optimization algorithms that is used for training the Deep Neural Networks. I have implemented the SGD Optimization algorithm with and without momentum method. The finalized class diagram for the VOptimizer class and the TSGD class, which is derived from the VOptimizer class is shown below, 
+<br /></p>
+
+<p><img src="/GSOC18//images/sgd_class_diagram.jpg" alt="SGD Optimizer" /></p>
+
+<p>Here, <code class="highlighter-rouge">Step()</code> function is implemented in the base class VOptimizer. And the <code class="highlighter-rouge">UpdateWeights() and UpdateBiases()</code> functions are pure virtual functions. So other optimizer classes extending from the base class VOptimizer, for example: TSGD class must implement the <code class="highlighter-rouge">UpdateWeights() and UpdateBiases()</code> functions. The <code class="highlighter-rouge">fPastWeightGradients and fPastBiasGradients</code> store the accumulation of the past weight and past bias gradients respectively.</p>
+
+<h2 id="momentum-update">Momentum Update:</h2>
+
+<p>With Stochastic Gradient Descent we don’t compute the exact derivative of our loss function. Instead, we’re estimating it on a small batch. This means we’re not always going in the optimal direction, because our derivatives are ‘noisy’. So, exponentially weighed averages can provide us a better estimate which is closer to the actual derivative than our noisy calculations. This is one reason why momentum might work better than classic SGD.</p>
+
+<p>The other reason lies in ravines. Ravine is an area, where the surface curves much more steeply in one dimension than in another. Ravines are common near local minimas in deep learning and SGD has troubles getting out of them. SGD will tend to oscillate across the narrow ravine since the negative gradient will point down one of the steep sides rather than along the ravine towards the optimum. Momentum helps accelerate gradients in the right direction.</p>
+
+<p>Thus, the momentum update is implemented as follows, ( similar to the tensorflow implementation )
+<br /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>accumulation = momentum * accumulation + gradient
+variable -= learning_rate * accumulation
+</code></pre></div></div>
+
+<p>So, one step of update is performed as,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \nabla_\theta J( \theta) \\  
+\theta &= \theta - \eta v_t
+\end{split}
+\end{align} %]]></script>
+
+<h2 id="testing-the-optimizer">Testing the Optimizer:</h2>
+
+<p>And now, for testing the optimizer, there is no exact methodology that can be used. One possible approach would be to test the convergence of the training and testing error during the training procedure. So the unit tests is created as follows,</p>
+
+<p>Let, X = Random Matrix ( nSamples x nFeatures ),<br />
+K = Random Matrix ( nFeatures x nOutput ),<br />
+Y = X * K ( nSamples x nOutput ) ( Generated one ).<br /></p>
+
+<p>I created a simple 3 layer DeepNet with the following architecture,</p>
+
+<p><img src="/GSOC18//images/sgd_dnn_arch.jpg" alt="Testing DNN Architecture" /></p>
+
+<div style="text-align: justify">
+I created the trainingData and testingData in a similar manner as described above. And trained my DeepNet to learn this linear function mapping i.e. Y = X * K.
+
+Now for testing, one method is to observe the convergence of the training and testing error. They converged very well in a quite number of iterations as below,
+</div>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/31/?share_key=t3n4pgq7N9QymVEAP4zBRg" target="_blank" title="SGDUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/31.png?share_key=t3n4pgq7N9QymVEAP4zBRg" alt="SGDUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:31" sharekey-plotly="t3n4pgq7N9QymVEAP4zBRg" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/32/?share_key=I2hxIaI56DUyL22vQO7dpE" target="_blank" title="SGDMUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/32.png?share_key=I2hxIaI56DUyL22vQO7dpE" alt="SGDMUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:32" sharekey-plotly="I2hxIaI56DUyL22vQO7dpE" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>The above figures shows the convergence of the training and testing errors for the SGD optimizer without and with momentum during the unit tests.</p>
+
+<p>Another method is to create a identity matrix I = Identity Matrix ( batchSize x nFeatures ) and give this as Input to the DeepNet and forward it and get the output at the last layer. Let this output be Y’ ( batchSize x nOutput ).</p>
+
+<p>Now, Since the DeepNet is trying to mimic the function Y = X * K, this output Y’ should be equal to K. For this to be true, there is one constrain to be satisfied that the batchSize and nFeatures should be equal so that we can construct the Identity Matrix I as a square matrix with diagonal elements being equal to 1.0. And I got the following results by comparing the Y’ with K.</p>
+
+<p><br />
+<img src="/GSOC18//images/sgd_tests_relative_error.jpg" alt="Testing SGD Optimizer - Relative Error" /></p>
+
+<h2 id="references">References:</h2>
+
+<p>1)<a href="https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d"> SGD with Momentum. </a></p>
+
+<p>2)<a href="https://www.tensorflow.org/api_docs/python/tf/train/MomentumOptimizer"> Tensorflow Implementation of SGD Optimizer. </a></p>
+
+  </div>
+  
+  <div class="post">
+    <h1 class="post-title">
+      <a href="/GSOC18//2018/06/01/design/">
+        Optimization Modules - Class Structure:-
+      </a>
+    </h1>
+
+    <span class="post-date">01 Jun 2018</span>
+
+    <p>In this blog post, I will be describing the class structure that can be potentially used to include the Optimizers in the TMVA submodule. The already existing API needs to be modified a bit to account for the Optimizers. I will be describing the class structure and also the changes that needs to be done to the existing API.</p>
+
+<p>Atlast, after discussing with the mentors, I finally found the correct design solution for including the Optimizers in the existing framework and the design seems to be feasible.</p>
+
+<h2 id="current-workflow-of-one-step-of-optimizers-update">Current workflow of one step of Optimizer’s update:</h2>
+<p><br /></p>
+
+<p><img src="/GSOC18//images/current_workflow1.jpg" alt="CurrentWorkflow" />
+<img src="/GSOC18//images/current_workflow2.jpg" alt="CurrentWorkflow" /></p>
+
+<p>In the current workflow, the class MethodDL creates an instance of the class TDLGradientDescent as minimizer and it is initialized. For performing one step of the update, the minimizer’s Step() function is called. The minimizer’s Step() function in turn calls the class TDeepNet’s Forward(), Backward() and Update() functions. The class TDeepNet’s Update() function iterates through its layers and calls the class VGeneralLayer’s Update() function for each layer. And the <strong>class VGeneralLayer’s Update() function</strong> is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its <strong>UpdateWeights()</strong> and <strong>UpdateBiases()</strong> functions.</p>
+
+<h2 id="design-issues-and-its-solutions">Design Issues and its solutions:</h2>
+<p><br /></p>
+
+<p><strong>1) How to identify the type of update in the class VGeneralLayer like SGD or Adam etc ?</strong></p>
+
+<p>The current implementation by default performs only the schocastic gradient descent update. And there is no way of identifying the type of update depending on the type of Optimizer. So the solution would be to <strong>pass the reference to the Optimizer object</strong> from the class MethodDL down to the class VGeneralLayer.</p>
+
+<p><strong>2) Where to store the additional variables like sum of past gradients and other parameters specific to each Optimizer ?</strong></p>
+
+<p>Since these additional variables are needed for performing the updates, they need to be stored in the same class which actually performs the update. The current implementation actually performs the update in the class VGeneralLayer. So as per the current implementation, if we store all the additional variables in the class VGeneralLayer, that would look clumsy and strange since that is not the responsibility of the class VGeneralLayer. So I have decided to <strong>perform the actual update in the Optimizer class and store additional variables in it</strong>. This would look a bit cleaner.</p>
+
+<p><strong>3) Should we need to move the update function from the class GeneralLayer to Optimizer class ?</strong></p>
+
+<p><strong>Yes</strong>, we should move the update function to the Optimizer class since its the responsibility of the Optimizer to perform such an update.</p>
+
+<p><strong>4) Do we really need to test the convergence in the Optimizer class itself or move it to the train() method of class MethodDL ?</strong></p>
+
+<p>The current implementation actually has the test for convergence in the Optimizer class itself. But testing for convergence is not the responsibility of the Optimizer class but is the responsibility of the training procedure. So the better option is to <strong>move the test for convergence to the train() method of class MethodDL.</strong></p>
+
+<h2 id="modified-workflow-of-one-step-of-optimizers-update">Modified workflow of one step of Optimizer’s update:</h2>
+
+<p><br />
+<img src="/GSOC18//images/modified_workflow1.jpg" alt="ModifiedWorkflow" />
+<img src="/GSOC18//images/modified_workflow2.jpg" alt="ModifiedWorkflow" /></p>
+
+<p>In the modified workflow, the class MethodDL creates an instance of the class TSGD ( i.e. specific type of optimizer as mentioned in the option ) as minimizer and it is initialized. Now for performing one step of the update, we actually pass the reference to the minimizer object to the class DeepNet’s Update() function. The class DeepNet’s Update() function iterates through each of its layer objects and pass the same reference of the minimizer object to the class VGeneralLayer’s Update() function. And the class VGeneralLayer’s Update() function now performs the update with the use of minimizer’s Step() function. So depending on the type of minimizer object used to perform the update, the corresponding update is performed. Here, the <strong>class TSGD’s Step() function</strong> is the one which actually does the update of the weights and biases with the corresponding weightGradients and biasGradients through  its <strong>UpdateWeights()</strong> and <strong>UpdateBiases()</strong> functions.</p>
+
+<h2 id="api-changes">API Changes:</h2>
+
+<h3 id="in-class-methoddl-">In class MethodDL :</h3>
+
+<p>1) Modify the <strong>Struct TTrainingSettings</strong> to include the option for optimizer.</p>
+
+<p><img src="/GSOC18//images/api_change1.jpg" alt="APIChange1" /></p>
+
+<p>2) Create an instance of the <strong>particular type of optimizer</strong> in the Train() method based on the option specified. If no option is specified, default choice would be to use Adam optimizer.</p>
+
+<h3 id="in-file-functionsh-">In file Functions.h :</h3>
+
+<p>1) Create a enum class EOptimizer with various optimizers.</p>
+
+<p><img src="/GSOC18//images/api_change2.jpg" alt="APIChange2" /></p>
+
+<h3 id="other-files">Other files:</h3>
+
+<p>1) Create a <strong>base class TOptimizer</strong> with the basic functions. ( Refer to the class diagram below. )</p>
+
+<p>2) Create various classes like <strong>Class TSGD, Class TAdam</strong> etc for each optimizer <strong>extending from</strong> the <strong>base Class TOptimizer</strong>.</p>
+
+<p>3) Re-implement the existing <strong>Class TDLGradientDescent</strong> with the new design as <strong>Class TSGD</strong>.</p>
+
+<p><strong>Final Design:</strong>
+<br />
+<img src="/GSOC18//images/tmva_optimizers_new.jpg" alt="TMVAOptimizersNew" /></p>
+
+<p>I hope that this post helps to get a clear understanding of the new design and its workflow. And atlast I can start coding :D . So my next goal is to re-implement the basic stochastic gradient descent with my new design along with unit tests and make sure everything works good. So, from my next post, I’ll describe more related to coding :P</p>
+
+
+  </div>
+  
+  <div class="post">
+    <h1 class="post-title">
+      <a href="/GSOC18//2018/05/16/optimizers/">
+        Optimization Algorithms - A Brief Overview:-
+      </a>
+    </h1>
+
+    <span class="post-date">16 May 2018</span>
+
+    <p>In this blog post, I would like to give a brief overview of the existing gradient descent optimization algorithms that are available. There are lots of good resources available online. You can check them at the References section at the end of this post.</p>
+
+<p>The existing TMVA submodule has always used gradient descent to update the parameters and minimize the cost of the neural networks. More advanced optimization methods can speed up learning and perhaps even get you to a better final value for the cost function. Having a good optimization algorithm can be the difference between waiting days vs. just a few hours to get a good result.</p>
+
+<p><strong>Gradient descent</strong> is a <strong>first-order iterative optimization algorithm</strong> for finding the minimum of a function. To find a local minimum of a function using gradient descent, one takes steps proportional to the negative of the gradient (or approximate gradient) of the function at the current point.
+Gradient descent goes “downhill” on a cost function <code class="highlighter-rouge">J</code>. Think of it as trying to do this:</p>
+
+<p><br />
+<img src="/GSOC18//images/gradientdescent.jpg" alt="Gradient Descent" />
+<br /></p>
+
+<h2 id="gradient-descent-variants">Gradient Descent Variants:</h2>
+
+<p>There are three variants of gradient descent, which depends on how much data you use to cacluate the gradients and perform an update. They are as follows,</p>
+
+<h3 id="1-batch-gradient-descent">1) Batch Gradient Descent:</h3>
+<p>Vanilla gradient descent, also known as batch gradient descent, computes the gradient of the cost function w.r.t. to the parameters <script type="math/tex">\theta</script> for the entire training dataset. It supports maximum vectorization, but if the data is large, it cannot fit into the memory.</p>
+
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta)</script>
+
+<h3 id="2-stochastic-gradient-descent">2) Stochastic Gradient Descent:</h3>
+<p>Stochastic gradient descent (SGD) in contrast performs a parameter update for each training example of the training dataset. It cannot exploit vectorization, since it has to iterate through all the training examples and make an update for each training example. It also shows a lot of fluctuations before converging to the solution.</p>
+
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i)}; y^{(i)})</script>
+
+<h3 id="3-mini-batch-gradient-descent">3) Mini-Batch Gradient Descent:</h3>
+
+<p>Mini-batch gradient descent finally takes the best of both approaches and performs an update for every mini-batch of n training examples. The size of the mini-batch is usually in the power of 2 like 64 or 256, but can vary depending on the applications. It exploits vectorization to some extent and its update is also fast. It is the most preferred way of update among these variants.</p>
+
+<script type="math/tex; mode=display">\theta = \theta - \eta \cdot \nabla_\theta J( \theta; x^{(i:i+n)}; y^{(i:i+n)})</script>
+
+<h2 id="gradient-descent-optimization-algorithms">Gradient descent optimization algorithms:</h2>
+
+<p>Here, I’ll discuss about the various gradient descent optimization algorithms that are proven to work best in most of the applications.</p>
+
+<h3 id="1-momentum-based-update">1) Momentum based update:</h3>
+
+<p>Momentum is a method that helps accelerate SGD in the relevant direction and dampens oscillations as can be seen in the below image. It does this by adding a fraction <script type="math/tex">\gamma</script> of the update vector of the past time step to the current update vector.</p>
+
+<p><strong>SGD without Momentum:</strong> <img src="/GSOC18//images/without_momentum.gif" alt="SGD without momentum" />
+<strong>SGD with Momentum:</strong> <img src="/GSOC18//images/with_momentum.gif" alt="SGD with momentum" /></p>
+
+<p>The momentum update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta) \\  
+\theta &= \theta - v_t
+\end{split}
+\end{align} %]]></script>
+
+<p>The usual value of <script type="math/tex">\gamma</script> is 0.9. ie ( <script type="math/tex">\gamma</script> &lt; 1 )</p>
+
+<h3 id="2-nesterov-accelerated-momentum">2) Nesterov accelerated Momentum:</h3>
+
+<p>Ilya Sutskever suggested a new form of momentum that often works better. It is inspired by the nesterov method for optimizing convex functions. First, make a big jump in the direction of the previous accumulated gradient. Then, measure the gradient where you end up and make correction. Its better to correct a mistake after you have made it. :P</p>
+
+<p><strong>Nesterov Update:</strong>
+<img src="/GSOC18//images/nesterov_update.png" alt="Nesterov Update" /></p>
+
+<p>Here, <span style="color:brown">brown vector = jump</span>, <span style="color:red">red vector = correction</span>, <span style="color:green">green vector =  accumulated gradient</span>, <span style="color:blue">blue vector = standard momentum</span>.</p>
+
+<p>The Nesterov update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta - \gamma v_{t-1} ) \\  
+\theta &= \theta - v_t
+\end{split}
+\end{align} %]]></script>
+
+<p>The usual value of <script type="math/tex">\gamma</script> is 0.9. ie ( <script type="math/tex">\gamma</script> &lt; 1 ) and it depends on the application.</p>
+
+<h3 id="3-adagrad">3) Adagrad:</h3>
+
+<p>AdaGrad is an optimization method that allows different step sizes for different features. It increases the influence of rare but informative features i.e. It adapts the learning rate to the parameters, performing larger updates for infrequent and smaller updates for frequent parameters. For this reason, it is well-suited for dealing with sparse data.</p>
+
+<p>The Adagrad update is done as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{G_{t} + \epsilon}} \odot g_{t}</script>
+
+<p>where,<br />
+    <script type="math/tex">G_{t}</script> - Sum of the squares of the past gradients w.r.t all parameters <script type="math/tex">\theta</script> along its diagonal.<br />
+    <script type="math/tex">\odot</script> - Matrix-vector dot product.<br />
+    <script type="math/tex">g_{t}</script> - Gradient at time step <script type="math/tex">t</script>.<br />
+    <script type="math/tex">\eta</script> - Learning rate.<br />
+    <script type="math/tex">\epsilon</script> - Smoothing term that avoids division by zero and is usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="4-adadelta">4) Adadelta:</h3>
+
+<p>Adadelta is an extension of Adagrad that tries to reduce the monotonically decreasing learning rate. Instead of accumulating all past squared gradients, Adadelta stores only the window of accumulated past gradients to some fixed window size <script type="math/tex">w</script>.</p>
+
+<p>And Instead of storing all the past gradients of window size w, it stores the decaying average of the past squared gradients. The running average <script type="math/tex">E[g^2]_t</script> at time step <script type="math/tex">t</script> is calculated as,</p>
+
+<script type="math/tex; mode=display">E[g^2]_t = \gamma E[g^2]_{t-1} + (1 - \gamma) g^2_t</script>
+
+<p>The root mean squared (RMS) error of the gradient is therefore,</p>
+
+<script type="math/tex; mode=display">RMS[g]_{t} = \sqrt{E[g^2]_t + \epsilon}</script>
+
+<p>And also the decaying average of the past squared updates is computed as,</p>
+
+<script type="math/tex; mode=display">E[\Delta \theta^2]_t = \gamma E[\Delta \theta^2]_{t-1} + (1 - \gamma) \Delta \theta^2_t</script>
+
+<p>The root mean squared (RMS) error of the updates is therefore,</p>
+
+<script type="math/tex; mode=display">RMS[\Delta \theta]_{t} = \sqrt{E[\Delta \theta^2]_t + \epsilon}</script>
+
+<p>Since <script type="math/tex">RMS[\Delta \theta]_{t}</script> is unknown, we approximate it with the RMS of parameter updates until the previous time step i.e. <script type="math/tex">RMS[\Delta \theta]_{t-1}</script></p>
+
+<p>Thus, the Adadelta update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+\Delta \theta_t &= - \dfrac{RMS[\Delta \theta]_{t-1}}{RMS[g]_{t}} g_{t} \\
+\theta_{t+1} &= \theta_t + \Delta \theta_t 
+\end{split}
+\end{align} %]]></script>
+
+<p>Here, the parameters usually take the default value,<br />
+<script type="math/tex">\gamma</script> - Usually around 0.9.<br />
+<script type="math/tex">\epsilon</script> - Smoothing term that avoids division by zero and is usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="5-rmsprop">5) RMSprop:</h3>
+
+<p>RMSprop is an unpublished, adaptive learning rate method proposed by Geoff Hinton. The main idea is <strong>“Divide the gradient by a running average of its recent magnitude”</strong>. It is similar to Adadelta but it is developed independently to overcome the disadvantages of the Adagrad algorithm.</p>
+
+<p>The RMSprop update is done as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+E[g^2]_t &= \gamma E[g^2]_{t-1} + (1-\gamma) g^2_t \\  
+\theta_{t+1} &= \theta_{t} - \dfrac{\eta}{\sqrt{E[g^2]_t + \epsilon}} g_{t}
+\end{split}
+\end{align} %]]></script>
+
+<p>where,<br />
+<script type="math/tex">\gamma</script> - Usually around 0.9.<br />
+<script type="math/tex">\eta</script> - Learning rate, usually around 0.001.<br />
+<script type="math/tex">E[g^2]_t</script> - Decaying average of the past squared gradients at time step <script type="math/tex">t</script>.<br /></p>
+
+<h3 id="6-adam">6) Adam:</h3>
+
+<p>Adaptive Moment Estimation (Adam) is another method that computes adaptive learning rates for each parameter. It stores both the decaying average of the past gradients <script type="math/tex">m_t</script>, similar to momentum and also the decaying average of the past squared gradients <script type="math/tex">v_t</script>, similar to RMSprop and Adadelta. Thus, it combines the advantages of both the methods. Adam is the default choice of the optimizer for any application in general.</p>
+
+<p>The decaying average of the past gradients <script type="math/tex">m_t</script> and the past squared gradients <script type="math/tex">v_t</script> is computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t \\  
+v_t &= \beta_2 v_{t-1} + (1 - \beta_2) g_t^2  
+\end{split}
+\end{align} %]]></script>
+
+<p>And since these <script type="math/tex">m_t</script> and <script type="math/tex">v_t</script> are initialized with zeros, they are biased towards zero, especially during the initial time steps. Thus, to avoid these biases, the bias corrected versions of them are computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+\hat{m}_t &= \dfrac{m_t}{1 - \beta^t_1} \\
+\hat{v}_t &= \dfrac{v_t}{1 - \beta^t_2} \end{split}
+\end{align} %]]></script>
+
+<p>Thus, the Adam update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t</script>
+
+<p>where,<br />
+<script type="math/tex">\beta_1</script> - usually 0.9.<br />
+<script type="math/tex">\beta_2</script> - usually 0.999.<br />
+<script type="math/tex">\eta</script> - Learning rate.<br />
+<script type="math/tex">\epsilon</script> - usually of the order of <script type="math/tex">1e-8</script>.<br /></p>
+
+<h3 id="7-adamax">7) Adamax:</h3>
+
+<p>Adamax is the generalization of the Adam algorithm to the <script type="math/tex">\ell_{\infty}</script> norm. Kingma and Ba show that <script type="math/tex">v_t</script> with <script type="math/tex">\ell_{\infty}</script> converges to the more stable value.</p>
+
+<p>The infinity norm-constrained <script type="math/tex">v_t</script> is denoted as <script type="math/tex">u_t</script> and is computed as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+u_t &= \beta_2^\infty v_{t-1} + (1 - \beta_2^\infty) |g_t|^\infty\\  
+              & = \max(\beta_2 \cdot v_{t-1}, |g_t|)
+\end{split}
+\end{align} %]]></script>
+
+<p>Here, since <script type="math/tex">u_t</script> relies on the max operation, it is not biased towards zero unlike the ones in the Adam algorithm.</p>
+
+<p>Thus, the Adamax update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{u_t} \hat{m}_t</script>
+
+<p>where,<br />
+<script type="math/tex">\beta_1</script> - usually 0.9.<br />
+<script type="math/tex">\beta_2</script> - usually 0.999.<br />
+<script type="math/tex">\eta</script> - Learning rate, usually 0.002.<br /></p>
+
+<h3 id="8-nadam">8) Nadam:</h3>
+
+<p>Nadam is similar to Adam which is a combination of the momentum and the RMSprop. Nadam can be viewed as a combination of the nesterov accelerated momentum and the RMSprop. Here, we do not need to modify the <script type="math/tex">\hat{v}_t</script>. The momentum vector equations are as follows,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align} 
+\begin{split}
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t\\  
+\hat{m}_t & = \frac{m_t}{1 - \beta^t_1}\\
+\theta_{t+1} &= \theta_{t} - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t
+\end{split}
+\end{align} %]]></script>
+
+<p>Expanding the last equation gives,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\dfrac{\beta_1 m_{t-1}}{1 - \beta^t_1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<p>But since,</p>
+
+<script type="math/tex; mode=display">\hat{m}_{t-1} =  \dfrac{m_{t-1}}{1 - \beta^t_1}</script>
+
+<p>we get,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_{t-1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<p>We can now add Nesterov momentum just as we did previously by simply replacing this bias-corrected estimate of the momentum vector of the previous time step <script type="math/tex">\hat{m}_{t−1}</script> with the bias-corrected estimate of the current momentum vector <script type="math/tex">\hat{m}_t</script>.</p>
+
+<p>Thus, the Nadam update is as follows,</p>
+
+<script type="math/tex; mode=display">\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_t + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})</script>
+
+<h3 id="summary-of-the-various-update-equations-">Summary of the various update equations :</h3>
+<p><br /></p>
+
+<p><img src="/GSOC18//images/update_eqn.jpg" alt="Update Equations" /></p>
+
+<h3 id="references">References:</h3>
+
+<p>1) <a href="http://ruder.io/optimizing-gradient-descent/index.html">An overview of gradient descent optimization algorithms - Sebastian Ruder</a></p>
+
+<p>2) <a href="https://towardsdatascience.com/difference-between-batch-gradient-descent-and-stochastic-gradient-descent-1187f1291aa1">Difference between Batch Gradient Descent and Stochastic Gradient Descent</a></p>
+
+<p>3) <a href="http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf">RMSProp</a></p>
+
+<p>4) <a href="http://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf">Adaptive Subgradient Methods for Online Learning and Stochastic Optimization</a></p>
+
+<p>5) <a href="https://arxiv.org/abs/1212.5701">AdaDelta: An Adaptive Learning Rate Method</a></p>
+
+<p>6) <a href="https://arxiv.org/abs/1412.6980v8">Adam: A Method for Stochastic Optimization</a></p>
+
+<p>7) <a href="http://cs229.stanford.edu/proj2015/054_report.pdf">Nadam: Nesterov Adam optimizer</a></p>
+
+<p>8) <a href="http://cs229.stanford.edu/proj2015/054_report.pdf">Incorporating Nesterov Momentum into Adam</a></p>
+
+<p>9) <a href="https://keras.io/optimizers/">Keras Optimizers</a></p>
 
   </div>
   
@@ -117,7 +618,7 @@ The project aims to implement various <strong>Optimization Modules ( Momentum-ba
 
 <div class="pagination">
   
-    <span class="pagination-item older">Older</span>
+    <a class="pagination-item older" href="/GSOC18/page3">Older</a>
   
   
     

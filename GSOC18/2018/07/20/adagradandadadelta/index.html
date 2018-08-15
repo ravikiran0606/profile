@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+      Adagrad and Adadelta Optimizers - Implementation and Testing:- &middot; GSoC'18 @ CERN
+    
+  </title>
+
+  <!--Mathjax-->
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/GSOC18/public/css/poole.css">
+  <link rel="stylesheet" href="/GSOC18/public/css/syntax.css">
+  <link rel="stylesheet" href="/GSOC18/public/css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/GSOC18/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/GSOC18/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container">
+    <div class="sidebar-about">
+      <h1>
+        <a href="/GSOC18/">
+          GSoC'18 @ CERN
+        </a>
+      </h1>
+      <p class="lead">Google Summer of Code 2018 Progress @ CERN-HSF by Ravi Kiran S.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/GSOC18/">Home</a>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/GSOC18//about/">About</a>
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <p>Copyright &copy; Jekyll Themes 2018</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">Adagrad and Adadelta Optimizers - Implementation and Testing:-</h1>
+  <span class="post-date">20 Jul 2018</span>
+  <p>In this blog post, I’ll be explaining the implementation of Adagrad and Adadelta optimizers.</p>
+
+<h2 id="adagrad">Adagrad:</h2>
+
+<p>AdaGrad is an optimization method that allows different step sizes for different features. It increases the influence of rare but informative features i.e. It adapts the learning rate to the parameters, performing larger updates for infrequent and smaller updates for frequent parameters. For this reason, it is well-suited for dealing with sparse data.</p>
+
+<p>Thus, the update is implemented as follows, ( similar to the tensorflow implementation )</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vt = Vt-1 + currentSquaredGradients
+theta = theta - learningRate * currentGradients / (sqrt(Vt + epsilon))
+</code></pre></div></div>
+
+<p>So, one step of update is performed as,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= v_{t-1} + \nabla_\theta^2 J( \theta) \\  
+\theta &= \theta - \dfrac{\eta}{\sqrt{v_t + \epsilon}} \nabla_\theta J( \theta)
+\end{split}
+\end{align} %]]></script>
+
+<h2 id="testing-adagrad">Testing Adagrad:</h2>
+
+<p>I used the same unit tests approach as for SGD optimizer. Have a look at <strong>Testing the SGD optimizer post</strong>.</p>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/33/?share_key=52ETON5ZthCr9zXsqp3XN6" target="_blank" title="ADAGRADUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/33.png?share_key=52ETON5ZthCr9zXsqp3XN6" alt="ADAGRADUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:33" sharekey-plotly="52ETON5ZthCr9zXsqp3XN6" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>The above figure shows the convergence of the training and testing errors for the Adagrad Optimizer during the unit tests.</p>
+
+<h2 id="adadelta">Adadelta:</h2>
+
+<p>Adadelta is an extension of Adagrad that tries to reduce the monotonically decreasing learning rate. Instead of accumulating all past squared gradients, Adadelta stores only the window of accumulated past gradients to some fixed window size <script type="math/tex">w</script>.</p>
+
+<p>Thus, the update is implemented as follows, ( similar to the tensorflow implementation )</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Vt = rho * Vt-1 + (1-rho) * currentSquaredGradients
+currentUpdates = sqrt(Wt + epsilon) * currentGradients / sqrt(Vt + epsilon)
+theta = theta - learningRate * currentUpdates
+Wt = rho * Wt-1 + (1-rho) * currentSquaredUpdates
+
+</code></pre></div></div>
+
+<p>So, one step of update is performed as,</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+\begin{split}
+v_t &= \rho v_{t-1} + (1-\rho) \nabla_\theta^2 J( \theta) \\ 
+\Delta\theta &= \dfrac{\sqrt{w_t + \epsilon}}{\sqrt{v_t + \epsilon}} \nabla_\theta J( \theta) \\
+\theta &= \theta - \eta \Delta\theta \\ 
+w_t &= \rho w_{t-1} + (1-\rho) \Delta\theta^2
+\end{split}
+\end{align} %]]></script>
+
+<h2 id="testing-adadelta">Testing Adadelta:</h2>
+
+<p>I used the same unit tests approach as for SGD optimizer. Have a look at <strong>Testing the SGD optimizer post</strong>.</p>
+
+<div>
+    <a href="https://plot.ly/~ravikiran0606/34/?share_key=48EXVp2d3ovHjvc3irP914" target="_blank" title="ADADELTAUTP" style="display: block; text-align: center;"><img src="https://plot.ly/~ravikiran0606/34.png?share_key=48EXVp2d3ovHjvc3irP914" alt="ADADELTAUTP" style="max-width: 100%;width: 600px;" width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="ravikiran0606:34" sharekey-plotly="48EXVp2d3ovHjvc3irP914" src="https://plot.ly/embed.js" async=""></script>
+</div>
+
+<p>The above figure shows the convergence of the training and testing errors for the Adadelta Optimizer during the unit tests.</p>
+
+<h2 id="references">References:</h2>
+
+<p>1) <a href="https://www.tensorflow.org/api_docs/python/tf/train/AdagradOptimizer">Adagrad Optimizer - Tensorflow Implementation</a></p>
+
+<p>2) <a href="https://www.tensorflow.org/api_docs/python/tf/train/AdadeltaOptimizer">Adadelta Optimizer - Tensorflow Implementation</a></p>
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/13/conclusion/">
+            Conclusion:-
+            <small>13 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/12/prs/">
+            List of PRs submitted:-
+            <small>12 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/GSOC18//2018/08/10/comparison/">
+            Comparison of various optimizers and future work:-
+            <small>10 Aug 2018</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+    </div>
+
+  </body>
+</html>
